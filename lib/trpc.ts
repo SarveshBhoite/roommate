@@ -15,9 +15,8 @@ const getBaseUrl = () => {
     return url;
   }
 
-  // Fallback default for local development.
-  // Note: For physical device testing, you should replace this with your machine's local IP address (e.g., http://192.168.x.x:3000)
-  return 'http://localhost:3000';
+  // Fallback default for local development. Wi-Fi IP used for Expo Go physical device testing.
+  return 'http://10.66.207.162:3000';
 };
 
 export const trpcClient = trpc.createClient({

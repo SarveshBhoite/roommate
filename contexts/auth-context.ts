@@ -8,6 +8,8 @@ interface User {
   name: string;
   roomId?: string;
   phone?: string;
+  role: 'admin' | 'member';
+  isOptedIn: boolean;
 }
 
 export const [AuthProvider, useAuth] = createContextHook(() => {
