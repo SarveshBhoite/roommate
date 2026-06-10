@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
+import Constants, { AppOwnership } from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
@@ -44,32 +45,74 @@ export default function BillsScreen() {
   };
 
   const executeRealPayment = async () => {
-    if (!activeBill) return;
+    if (!activeBill || !user) return;
     setLoadingPayment(true);
 
     try {
-      const url = `${getBaseUrl()}/pay/${activeBill._id}/${user?._id}`;
-      // Open secure web checkout in-app
-      await WebBrowser.openBrowserAsync(url);
-      
-      // Prompt user to refresh after payment
-      Alert.alert(
-        'Payment Gateway Opened',
-        'We have launched the secure Razorpay payment page in your browser. After completing the payment, please press "OK" to check payment status.',
-        [
-          {
-            text: 'OK',
-            onPress: async () => {
-              setLoadingPayment(true);
-              setTimeout(async () => {
-                await refetchBills();
-                setLoadingPayment(false);
-                setPaymentModalVisible(false);
-              }, 1000);
+      // Create Razorpay order on the backend
+      const order = await payOrderMutation.mutateAsync({ contributionId: activeBill._id });
+
+      const isExpoGo = Constants.appOwnership !== ('standalone' as any);
+
+      if (isExpoGo) {
+        // Fallback in Expo Go to the secure Hono-hosted web portal checkout
+        const url = `${getBaseUrl()}/pay/${activeBill._id}/${user?._id}`;
+        await WebBrowser.openBrowserAsync(url);
+        
+        Alert.alert(
+          'Payment Gateway Opened',
+          'We have launched the secure Razorpay payment page in your browser. After completing the payment, please press "OK" to check payment status.',
+          [
+            {
+              text: 'OK',
+              onPress: async () => {
+                setLoadingPayment(true);
+                setTimeout(async () => {
+                  await refetchBills();
+                  setLoadingPayment(false);
+                  setPaymentModalVisible(false);
+                }, 1000);
+              }
             }
-          }
-        ]
-      );
+          ]
+        );
+      } else {
+        // Run native Razorpay SDK directly inside the built APK
+        try {
+          const RazorpayCheckout = require('react-native-razorpay').default;
+          const options = {
+            description: activeBill.title,
+            image: 'https://i.imgur.com/3g7A6cz.png',
+            currency: 'INR',
+            key: order.keyId, // Razorpay test/live Key ID from backend
+            amount: order.amount, // Total amount in paise
+            name: 'Roommate Hub',
+            order_id: order.orderId, // Razorpay Order ID created on backend
+            prefill: {
+              email: user.email,
+              contact: user.phone || '',
+              name: user.name
+            },
+            theme: { color: '#4f46e5' }
+          };
+
+          RazorpayCheckout.open(options).then(async (data: any) => {
+            // Verify payment signature securely on the server
+            await verifyPaymentMutation.mutateAsync({
+              contributionId: activeBill._id,
+              razorpayOrderId: data.razorpay_order_id,
+              razorpayPaymentId: data.razorpay_payment_id,
+              razorpaySignature: data.razorpay_signature
+            });
+          }).catch((error: any) => {
+            Alert.alert('Payment Failed', error.description || 'Transaction cancelled');
+            setLoadingPayment(false);
+          });
+        } catch (nativeError: any) {
+          Alert.alert('Razorpay Load Error', 'Failed to load native Razorpay module: ' + nativeError.message);
+          setLoadingPayment(false);
+        }
+      }
     } catch (error: any) {
       Alert.alert('Payment Error', formatError(error));
       setLoadingPayment(false);
