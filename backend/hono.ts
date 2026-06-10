@@ -17,6 +17,9 @@ const app = new Hono();
 
 app.use('*', cors());
 
+// Health Check endpoint to support external keep-alive pingers (like UptimeRobot)
+app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date() }));
+
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
 

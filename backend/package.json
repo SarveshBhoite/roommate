@@ -1,9 +1,10 @@
 {
   "name": "roommate-backend",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "dist/hono.js",
   "scripts": {
-    "start": "node server.js",
+    "build": "tsc",
+    "start": "node dist/hono.js",
     "dev": "tsx watch hono.ts"
   },
   "dependencies": {
