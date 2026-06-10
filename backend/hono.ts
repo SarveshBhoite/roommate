@@ -56,7 +56,7 @@ app.get('/privacy', (c) => {
         <p class="mb-4 text-sm leading-relaxed">Your data is only shared with the roommates in your designated room group. We do not sell or share your personal data with third-party advertisers. All passwords and network requests are encrypted using industry-standard protocols.</p>
         
         <h2 class="text-xl font-bold text-slate-900 mt-6 mb-3">4. Contact Us</h2>
-        <p class="mb-4 text-sm leading-relaxed">If you have any questions or request deletion of your account and personal data, please contact the roommate administrator of your group or email us at support@hubmate.app.</p>
+        <p class="mb-4 text-sm leading-relaxed">If you have any questions or request deletion of your account and personal data, please contact the roommate administrator of your group or email us at rajb81008@gmail.com.</p>
         
         <div class="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
           <span>&copy; 2026 Hubmate App</span>
