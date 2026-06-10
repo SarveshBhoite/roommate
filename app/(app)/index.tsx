@@ -88,13 +88,13 @@ export default function DashboardScreen() {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-slate-50`} edges={['top']}>
+    <SafeAreaView style={tw`flex-1 bg-[#faf7f2]`} edges={['top']}>
       <StatusBar style="dark" />
 
       {/* Header Banner */}
       <View style={tw`px-6 py-4 flex-row justify-between items-center bg-white border-b border-slate-100/80 shadow-sm shadow-slate-100/10`}>
         <View style={tw`flex-1 mr-2`}>
-          <Text style={tw`text-[10px] font-black text-indigo-600 tracking-widest uppercase`}>Roommate Hub</Text>
+          <Text style={tw`text-[10px] font-black text-[#721c3b] tracking-widest uppercase`}>Roommate Hub</Text>
           <Text style={tw`text-xl font-bold text-slate-900 tracking-tight`}>{room?.name || 'Loading Room...'}</Text>
         </View>
         {room?.code && (
@@ -110,8 +110,8 @@ export default function DashboardScreen() {
 
       {/* Notice Marquee Board */}
       {marqueeText ? (
-        <View style={tw`bg-slate-900 py-3 overflow-hidden flex-row border-b border-slate-950 items-center px-4`}>
-          <Volume2 size={14} color="#a5b4fc" style={tw`mr-2`} />
+        <View style={tw`bg-[#4a1024] py-3 overflow-hidden flex-row border-b border-[#3c0d1e] items-center px-4`}>
+          <Volume2 size={14} color="#f8d3de" style={tw`mr-2`} />
           <View style={tw`flex-1 overflow-hidden`}>
             <Animated.View style={{ transform: [{ translateX: scrollX }], width: 600 }}>
               <Text style={tw`text-slate-100 text-xs font-bold tracking-wide`} numberOfLines={1}>
@@ -128,13 +128,13 @@ export default function DashboardScreen() {
         <View style={tw`mb-6`}>
           <Text style={tw`text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider`}>Active Roommates</Text>
           {loadingMembers ? (
-            <ActivityIndicator size="small" color="#4f46e5" />
+            <ActivityIndicator size="small" color="#721c3b" />
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tw`gap-3.5 py-1`}>
               {members?.map((member: any) => (
                 <View key={member._id} style={tw`bg-white px-4 py-4 rounded-[24px] items-center border border-slate-100 shadow-sm shadow-slate-100/40 w-28`}>
-                  <View style={tw`w-12 h-12 rounded-[18px] bg-indigo-50 border border-indigo-100 items-center justify-center mb-2.5`}>
-                    <Text style={tw`text-indigo-600 font-extrabold text-sm`}>{getInitials(member.name)}</Text>
+                  <View style={tw`w-12 h-12 rounded-[18px] bg-[#fdf3f5] border border-[#f8e3e7] items-center justify-center mb-2.5`}>
+                    <Text style={tw`text-[#721c3b] font-extrabold text-sm`}>{getInitials(member.name)}</Text>
                   </View>
                   <Text style={tw`text-xs font-bold text-slate-800 text-center`} numberOfLines={1}>{member.name}</Text>
                   <View style={tw`flex-row items-center gap-1.5 mt-2`}>
@@ -154,7 +154,7 @@ export default function DashboardScreen() {
           <Text style={tw`text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider`}>Active Chore Duties</Text>
           <View style={tw`bg-white rounded-[24px] p-5 border border-slate-100 shadow-sm shadow-slate-100/40`}>
             {loadingChores ? (
-              <ActivityIndicator size="small" color="#4f46e5" />
+              <ActivityIndicator size="small" color="#721c3b" />
             ) : !chores || chores.length === 0 ? (
               <View style={tw`items-center py-6`}>
                 <Text style={tw`text-xs text-slate-400 font-bold`}>No active chore duties setup.</Text>
@@ -171,13 +171,13 @@ export default function DashboardScreen() {
                     }`}
                   >
                     <View style={tw`flex-row items-center gap-2.5`}>
-                      <View style={tw`w-2 h-2 rounded-full ${isActiveUserSelf ? 'bg-indigo-500' : 'bg-slate-300'}`} />
+                      <View style={tw`w-2 h-2 rounded-full ${isActiveUserSelf ? 'bg-[#721c3b]' : 'bg-slate-300'}`} />
                       <Text style={tw`text-sm font-bold text-slate-700`}>{chore.name}</Text>
                     </View>
                     <View style={tw`flex-row items-center gap-2`}>
                       <View style={tw`px-3 py-1.5 rounded-xl flex-row items-center gap-1 bg-slate-50 border border-slate-100/60`}>
                         <User size={12} color="#64748b" />
-                        <Text style={tw`text-xs font-semibold ${isActiveUserSelf ? 'text-indigo-600' : 'text-slate-600'}`}>
+                        <Text style={tw`text-xs font-semibold ${isActiveUserSelf ? 'text-[#721c3b]' : 'text-slate-600'}`}>
                           {activeUser ? activeUser.name : 'Nobody'} {isActiveUserSelf ? '(You)' : ''}
                         </Text>
                       </View>
@@ -194,7 +194,7 @@ export default function DashboardScreen() {
           <Text style={tw`text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider`}>Activity History Log</Text>
           <View style={tw`bg-white rounded-[24px] p-5 border border-slate-100 shadow-sm shadow-slate-100/40 relative`}>
             {loadingLogs ? (
-              <ActivityIndicator size="small" color="#4f46e5" />
+              <ActivityIndicator size="small" color="#721c3b" />
             ) : !logs || logs.length === 0 ? (
               <View style={tw`items-center py-8`}>
                 <Clock size={22} color="#94a3b8" />
@@ -229,10 +229,10 @@ export default function DashboardScreen() {
                         {hasProof && (
                           <TouchableOpacity
                             onPress={() => setActivePhotoUrl(log.imageUrl)}
-                            style={tw`bg-indigo-50/80 border border-indigo-100 px-2.5 py-1 rounded-xl flex-row items-center gap-1`}
+                            style={tw`bg-[#fdf3f5]/80 border border-[#f8e3e7] px-2.5 py-1 rounded-xl flex-row items-center gap-1`}
                           >
-                            <Camera size={11} color="#4f46e5" />
-                            <Text style={tw`text-[10px] font-extrabold text-indigo-600`}>Proof</Text>
+                            <Camera size={11} color="#721c3b" />
+                            <Text style={tw`text-[10px] font-extrabold text-[#721c3b]`}>Proof</Text>
                           </TouchableOpacity>
                         )}
                       </View>

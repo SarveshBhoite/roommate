@@ -169,13 +169,13 @@ export default function ChoresScreen() {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-slate-50`} edges={['top']}>
+    <SafeAreaView style={tw`flex-1 bg-[#faf7f2]`} edges={['top']}>
       <StatusBar style="dark" />
       
       {/* Header */}
       <View style={tw`px-6 py-4 bg-white border-b border-slate-100/80 flex-row justify-between items-center shadow-sm shadow-slate-100/15`}>
         <View>
-          <Text style={tw`text-[10px] font-black text-indigo-600 tracking-widest uppercase`}>Roommate Chores</Text>
+          <Text style={tw`text-[10px] font-black text-[#721c3b] tracking-widest uppercase`}>Roommate Chores</Text>
           <Text style={tw`text-xl font-bold text-slate-900 tracking-tight`}>Work Rotations</Text>
         </View>
         <TouchableOpacity onPress={() => { refetchChores(); refetchSwaps(); }} style={tw`p-2.5 bg-slate-50 border border-slate-100 rounded-full shadow-sm`}>
@@ -217,7 +217,7 @@ export default function ChoresScreen() {
         {/* Chores List */}
         <Text style={tw`text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider`}>Active Chores</Text>
         {loadingChores ? (
-          <ActivityIndicator size="small" color="#4f46e5" />
+          <ActivityIndicator size="small" color="#721c3b" />
         ) : !chores || chores.length === 0 ? (
           <View style={tw`bg-white rounded-[24px] p-8 items-center border border-slate-100 shadow-sm shadow-slate-100/40`}>
             <CheckSquare size={32} color="#94a3b8" />
@@ -247,9 +247,9 @@ export default function ChoresScreen() {
                         <Settings size={14} color="#64748b" />
                       </TouchableOpacity>
                     )}
-                    <View style={tw`bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl flex-row items-center gap-1`}>
-                      <User size={12} color="#4f46e5" />
-                      <Text style={tw`text-[10px] font-bold text-indigo-600 uppercase`}>Turn: {activeUser?.name || 'None'}</Text>
+                    <View style={tw`bg-[#fdf3f5] border border-[#f8e3e7] px-3 py-1.5 rounded-xl flex-row items-center gap-1`}>
+                      <User size={12} color="#721c3b" />
+                      <Text style={tw`text-[10px] font-bold text-[#721c3b] uppercase`}>Turn: {activeUser?.name || 'None'}</Text>
                     </View>
                   </View>
                 </View>
@@ -263,7 +263,7 @@ export default function ChoresScreen() {
                         key={m._id}
                         style={tw`flex-row items-center px-3 py-2 rounded-xl border ${
                           isActive 
-                            ? 'bg-indigo-600 border-indigo-600 shadow-md shadow-indigo-100' 
+                            ? 'bg-[#721c3b] border-[#721c3b] shadow-md shadow-rose-900/10' 
                             : 'bg-slate-50 border-slate-100'
                         }`}
                       >
@@ -282,13 +282,13 @@ export default function ChoresScreen() {
                       onPress={() => openSwapModal(chore)}
                       style={tw`flex-row items-center justify-center border border-slate-200 rounded-2xl px-4 py-3.5 flex-1 gap-2 bg-slate-50 shadow-sm`}
                     >
-                      <ArrowLeftRight size={16} color="#4f46e5" />
-                      <Text style={tw`text-indigo-600 font-bold text-xs uppercase tracking-wider`}>Swap Turn</Text>
+                      <ArrowLeftRight size={16} color="#721c3b" />
+                      <Text style={tw`text-[#721c3b] font-bold text-xs uppercase tracking-wider`}>Swap Turn</Text>
                     </TouchableOpacity>
                     
                     <TouchableOpacity
                       onPress={() => handleMarkDone(chore._id)}
-                      style={tw`flex-row items-center justify-center bg-indigo-600 rounded-2xl px-4 py-3.5 flex-2 gap-2 shadow-lg shadow-indigo-200/50`}
+                      style={tw`flex-row items-center justify-center bg-[#721c3b] rounded-2xl px-4 py-3.5 flex-2 gap-2 shadow-lg shadow-rose-900/20`}
                     >
                       <Check size={16} color="#ffffff" />
                       <Text style={tw`text-white font-bold text-xs uppercase tracking-wider`}>Mark Done</Text>
@@ -312,7 +312,7 @@ export default function ChoresScreen() {
         transparent={true}
         onRequestClose={() => setSwapModalVisible(false)}
       >
-        <View style={tw`flex-1 bg-slate-950/45 justify-end`}>
+        <View style={tw`flex-1 bg-slate-900/60 justify-end`}>
           <View style={tw`bg-white rounded-t-[32px] p-6 shadow-2xl`}>
             <View style={tw`flex-row justify-between items-center mb-4`}>
               <Text style={tw`text-lg font-bold text-slate-900 tracking-tight`}>Swap Turn</Text>
@@ -344,7 +344,7 @@ export default function ChoresScreen() {
                       </View>
                       <Text style={tw`text-sm font-semibold text-slate-800`}>{item.name}</Text>
                     </View>
-                    <ArrowLeftRight size={15} color="#4f46e5" />
+                    <ArrowLeftRight size={15} color="#721c3b" />
                   </TouchableOpacity>
                 )}
                 style={tw`max-h-60 mb-4`}
@@ -361,7 +361,7 @@ export default function ChoresScreen() {
         transparent={true}
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View style={tw`flex-1 bg-slate-950/45 justify-end`}>
+        <View style={tw`flex-1 bg-slate-900/60 justify-end`}>
           <View style={tw`bg-white rounded-t-[32px] p-6 max-h-[85%] shadow-2xl`}>
             <View style={tw`flex-row justify-between items-center mb-5`}>
               <Text style={tw`text-lg font-bold text-slate-900 tracking-tight`}>Chore Loop Order</Text>
@@ -376,8 +376,8 @@ export default function ChoresScreen() {
 
             {/* Selected sequence display */}
             {editedRotationUsers.length > 0 && (
-              <View style={tw`bg-indigo-50/70 p-4 rounded-2xl mb-5 border border-indigo-100`}>
-                <Text style={tw`text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-2`}>Configured Loop Order:</Text>
+              <View style={tw`bg-[#fdf3f5]/70 p-4 rounded-2xl mb-5 border border-[#f8e3e7]`}>
+                <Text style={tw`text-[10px] font-black text-[#721c3b] uppercase tracking-wider mb-2`}>Configured Loop Order:</Text>
                 <Text style={tw`text-xs font-semibold text-slate-700 leading-relaxed`}>
                   {editedRotationUsers.map((uid, idx) => {
                     const name = members?.find((m: any) => m._id === uid)?.name || '';
@@ -398,7 +398,7 @@ export default function ChoresScreen() {
                     style={tw`flex-row items-center justify-between py-3.5 border-b border-slate-50`}
                   >
                     <Text style={tw`text-sm font-semibold text-slate-700`}>{m.name}</Text>
-                    <View style={tw`w-5 h-5 rounded-md border items-center justify-center ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
+                    <View style={tw`w-5 h-5 rounded-md border items-center justify-center ${isChecked ? 'bg-[#721c3b] border-[#721c3b]' : 'border-slate-300'}`}>
                       {isChecked && <Check size={10} color="#ffffff" style={{ alignSelf: 'center' }} />}
                     </View>
                   </TouchableOpacity>
@@ -408,7 +408,7 @@ export default function ChoresScreen() {
 
             <TouchableOpacity
               onPress={handleUpdateRotation}
-              style={tw`bg-indigo-600 rounded-2xl py-4 items-center justify-center shadow-lg shadow-indigo-200/50`}
+              style={tw`bg-[#721c3b] rounded-2xl py-4 items-center justify-center shadow-lg shadow-rose-900/20`}
             >
               <Text style={tw`text-white font-bold text-sm uppercase tracking-wider`}>Save Sequence</Text>
             </TouchableOpacity>
@@ -420,7 +420,7 @@ export default function ChoresScreen() {
       {(markDoneMutation.isLoading || markDoneMutation.isPending) && (
         <View style={tw`absolute inset-0 bg-slate-950/60 items-center justify-center z-50`}>
           <View style={tw`bg-white p-6 rounded-[24px] shadow-2xl items-center border border-slate-100`}>
-            <ActivityIndicator size="large" color="#4f46e5" />
+            <ActivityIndicator size="large" color="#721c3b" />
             <Text style={tw`text-slate-900 font-bold text-sm mt-3`}>Uploading Photo Proof...</Text>
             <Text style={tw`text-slate-400 text-xs mt-1.5`}>Please wait, updating chore turns</Text>
           </View>

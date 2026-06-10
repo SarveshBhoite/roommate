@@ -231,13 +231,13 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-slate-50`} edges={['top']}>
+    <SafeAreaView style={tw`flex-1 bg-[#faf7f2]`} edges={['top']}>
       <StatusBar style="dark" />
 
       {/* Header */}
       <View style={tw`px-6 py-4 bg-white border-b border-slate-100 flex-row justify-between items-center shadow-sm shadow-slate-100`}>
         <View>
-          <Text style={tw`text-[10px] font-bold text-indigo-600 tracking-widest uppercase`}>Roommate Settings</Text>
+          <Text style={tw`text-[10px] font-bold text-[#721c3b] tracking-widest uppercase`}>Roommate Settings</Text>
           <Text style={tw`text-xl font-extrabold text-slate-900 tracking-tight mt-0.5`}>Profile & Controls</Text>
         </View>
         <TouchableOpacity 
@@ -253,15 +253,15 @@ export default function ProfileScreen() {
         
         {/* User Card */}
         <View style={tw`bg-white rounded-2xl p-5 mb-5 shadow-sm border border-slate-100 flex-row items-center gap-4.5`}>
-          <View style={tw`w-14 h-14 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100`}>
-            <User size={24} color="#4f46e5" />
+          <View style={tw`w-14 h-14 bg-[#fdf3f5] rounded-xl items-center justify-center border border-[#f8e3e7]`}>
+            <User size={24} color="#721c3b" />
           </View>
           <View style={tw`flex-1`}>
             <Text style={tw`text-lg font-extrabold text-slate-900 tracking-tight`}>{user?.name}</Text>
             <Text style={tw`text-xs text-slate-500 font-medium mt-0.5`}>{user?.email} • {user?.phone}</Text>
             <View style={tw`flex-row mt-2`}>
-              <View style={tw`bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-100/55`}>
-                <Text style={tw`text-[10px] font-extrabold text-indigo-600 uppercase`}>{user?.role}</Text>
+              <View style={tw`bg-[#fdf3f5] px-2.5 py-0.5 rounded-md border border-[#f8e3e7]/55`}>
+                <Text style={tw`text-[10px] font-extrabold text-[#721c3b] uppercase`}>{user?.role}</Text>
               </View>
             </View>
           </View>
@@ -276,8 +276,8 @@ export default function ProfileScreen() {
               <Text style={tw`text-sm font-bold text-slate-800`}>Room Code</Text>
               <Text style={tw`text-xs text-slate-500 font-medium mt-0.5`}>Share code to add new roommates</Text>
             </View>
-            <View style={tw`bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl`}>
-              <Text style={tw`text-sm font-extrabold text-indigo-600 tracking-wide`}>
+            <View style={tw`bg-[#fdf3f5] border border-[#f8e3e7] px-3 py-1.5 rounded-xl`}>
+              <Text style={tw`text-sm font-extrabold text-[#721c3b] tracking-wide`}>
                 {room?.code || 'RM-N/A'}
               </Text>
             </View>
@@ -291,13 +291,13 @@ export default function ProfileScreen() {
               </Text>
             </View>
             {loadingToggle ? (
-              <ActivityIndicator size="small" color="#4f46e5" />
+              <ActivityIndicator size="small" color="#721c3b" />
             ) : (
               <Switch
                 value={optIn}
                 onValueChange={handleToggleOpt}
-                trackColor={{ false: '#e2e8f0', true: '#c7d2fe' }}
-                thumbColor={optIn ? '#4f46e5' : '#cbd5e1'}
+                trackColor={{ false: '#e2e8f0', true: '#f8d3de' }}
+                thumbColor={optIn ? '#721c3b' : '#cbd5e1'}
               />
             )}
           </View>
@@ -321,8 +321,8 @@ export default function ProfileScreen() {
                 activeOpacity={0.7}
               >
                 <View style={tw`flex-row items-center gap-3.5 flex-1`}>
-                  <View style={tw`w-9 h-9 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100/50`}>
-                    <UserPlus size={18} color="#4f46e5" />
+                  <View style={tw`w-9 h-9 bg-[#fdf3f5] rounded-xl items-center justify-center border border-[#f8e3e7]/55`}>
+                    <UserPlus size={18} color="#721c3b" />
                   </View>
                   <View>
                     <Text style={tw`text-sm font-bold text-slate-800`}>Manage Join Requests</Text>
@@ -349,8 +349,8 @@ export default function ProfileScreen() {
                 activeOpacity={0.7}
               >
                 <View style={tw`flex-row items-center gap-3.5 flex-1`}>
-                  <View style={tw`w-9 h-9 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100/50`}>
-                    <Megaphone size={18} color="#4f46e5" />
+                  <View style={tw`w-9 h-9 bg-[#fdf3f5] rounded-xl items-center justify-center border border-[#f8e3e7]/55`}>
+                    <Megaphone size={18} color="#721c3b" />
                   </View>
                   <View>
                     <Text style={tw`text-sm font-bold text-slate-800`}>Edit Announcement Board</Text>
@@ -367,8 +367,8 @@ export default function ProfileScreen() {
                 activeOpacity={0.7}
               >
                 <View style={tw`flex-row items-center gap-3.5 flex-1`}>
-                  <View style={tw`w-9 h-9 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100/50`}>
-                    <PlusCircle size={18} color="#4f46e5" />
+                  <View style={tw`w-9 h-9 bg-[#fdf3f5] rounded-xl items-center justify-center border border-[#f8e3e7]/55`}>
+                    <PlusCircle size={18} color="#721c3b" />
                   </View>
                   <View>
                     <Text style={tw`text-sm font-bold text-slate-800`}>Create Work Loop</Text>
@@ -385,8 +385,8 @@ export default function ProfileScreen() {
                 activeOpacity={0.7}
               >
                 <View style={tw`flex-row items-center gap-3.5 flex-1`}>
-                  <View style={tw`w-9 h-9 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100/50`}>
-                    <FileText size={18} color="#4f46e5" />
+                  <View style={tw`w-9 h-9 bg-[#fdf3f5] rounded-xl items-center justify-center border border-[#f8e3e7]/55`}>
+                    <FileText size={18} color="#721c3b" />
                   </View>
                   <View>
                     <Text style={tw`text-sm font-bold text-slate-800`}>Split Shared Bill</Text>
@@ -468,8 +468,8 @@ export default function ProfileScreen() {
                 {pendingMembers?.map((m: any) => (
                   <View key={m._id} style={tw`flex-row justify-between items-center py-3 border-b border-slate-100 last:border-0`}>
                     <View style={tw`flex-1 mr-3 flex-row items-center gap-2.5`}>
-                      <View style={tw`w-8 h-8 bg-indigo-50 rounded-lg items-center justify-center border border-indigo-100/50`}>
-                        <Text style={tw`text-xs font-bold text-indigo-600`}>{m.name.charAt(0).toUpperCase()}</Text>
+                      <View style={tw`w-8 h-8 bg-[#fdf3f5] rounded-lg items-center justify-center border border-[#f8e3e7]/55`}>
+                        <Text style={tw`text-xs font-bold text-[#721c3b]`}>{m.name.charAt(0).toUpperCase()}</Text>
                       </View>
                       <View>
                         <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
@@ -486,7 +486,7 @@ export default function ProfileScreen() {
                       </TouchableOpacity>
                       <TouchableOpacity 
                         onPress={() => handleApprove(m._id)} 
-                        style={tw`p-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-100`}
+                        style={tw`p-2.5 bg-[#721c3b] hover:bg-rose-900 rounded-xl shadow-sm shadow-rose-900/10`}
                         activeOpacity={0.7}
                       >
                         <Check size={14} color="#ffffff" />
@@ -525,7 +525,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity 
               onPress={handleUpdateNotice} 
-              style={tw`bg-indigo-600 rounded-2xl py-4 items-center shadow-md shadow-indigo-100`}
+              style={tw`bg-[#721c3b] rounded-2xl py-4 items-center shadow-md shadow-rose-900/10`}
               activeOpacity={0.8}
             >
               <Text style={tw`text-white font-bold text-sm`}>Save Announcement</Text>
@@ -558,14 +558,14 @@ export default function ProfileScreen() {
 
             {/* Selected sequence display */}
             {selectedChoreUsers.length > 0 && (
-              <View style={tw`bg-indigo-50/70 p-4 rounded-2xl mb-4 border border-indigo-100/50`}>
-                <Text style={tw`text-[10px] font-bold text-indigo-600 mb-2 tracking-wider uppercase`}>Loop Sequence Order:</Text>
+              <View style={tw`bg-[#fdf3f5]/70 p-4 rounded-2xl mb-4 border border-[#f8e3e7]/55`}>
+                <Text style={tw`text-[10px] font-bold text-[#721c3b] mb-2 tracking-wider uppercase`}>Loop Sequence Order:</Text>
                 <View style={tw`flex-row flex-wrap items-center gap-1.5`}>
                   {selectedChoreUsers.map((uid, idx) => {
                     const name = members?.find((m: any) => m._id === uid)?.name || '';
                     return (
                       <View key={uid} style={tw`flex-row items-center`}>
-                        <View style={tw`bg-indigo-600 px-2.5 py-1 rounded-lg border border-indigo-500`}>
+                        <View style={tw`bg-[#721c3b] px-2.5 py-1 rounded-lg border border-[#5c162f]`}>
                           <Text style={tw`text-xs font-bold text-white`}>{idx + 1}. {name}</Text>
                         </View>
                         {idx < selectedChoreUsers.length - 1 && (
@@ -599,7 +599,7 @@ export default function ProfileScreen() {
                       <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
                     </View>
                     <View style={tw`w-5.5 h-5.5 border rounded-lg items-center justify-center ${
-                      isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white'
+                      isChecked ? 'bg-[#721c3b] border-[#721c3b]' : 'border-slate-300 bg-white'
                     }`}>
                       {isChecked && (
                         <Text style={tw`text-[10px] font-extrabold text-white`}>
@@ -614,7 +614,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity 
               onPress={handleCreateChore} 
-              style={tw`bg-indigo-600 rounded-2xl py-4 items-center shadow-md shadow-indigo-100`}
+              style={tw`bg-[#721c3b] rounded-2xl py-4 items-center shadow-md shadow-rose-900/10`}
               activeOpacity={0.8}
             >
               <Text style={tw`text-white font-bold text-sm`}>Start Chore Loop</Text>
@@ -674,7 +674,7 @@ export default function ProfileScreen() {
                       <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
                     </View>
                     <View style={tw`w-5.5 h-5.5 border rounded-lg items-center justify-center ${
-                      isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white'
+                      isChecked ? 'bg-[#721c3b] border-[#721c3b]' : 'border-slate-300 bg-white'
                     }`}>
                       {isChecked && <Check size={12} color="#ffffff" />}
                     </View>
@@ -685,7 +685,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity 
               onPress={handleCreateBill} 
-              style={tw`bg-indigo-600 rounded-2xl py-4 items-center shadow-md shadow-indigo-100`}
+              style={tw`bg-[#721c3b] rounded-2xl py-4 items-center shadow-md shadow-rose-900/10`}
               activeOpacity={0.8}
             >
               <Text style={tw`text-white font-bold text-sm`}>Split Cost Equally</Text>

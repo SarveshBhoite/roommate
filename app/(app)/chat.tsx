@@ -72,13 +72,13 @@ export default function ChatScreen() {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-slate-50`} edges={['top']}>
+    <SafeAreaView style={tw`flex-1 bg-[#faf7f2]`} edges={['top']}>
       <StatusBar style="dark" />
 
       {/* Header */}
       <View style={tw`px-6 py-4 bg-white border-b border-slate-100 flex-row justify-between items-center shadow-sm shadow-slate-100`}>
         <View>
-          <Text style={tw`text-[10px] font-bold text-indigo-600 tracking-widest uppercase`}>Room Chat</Text>
+          <Text style={tw`text-[10px] font-bold text-[#721c3b] tracking-widest uppercase`}>Room Chat</Text>
           <Text style={tw`text-xl font-extrabold text-slate-900 tracking-tight mt-0.5`}>Group Discussion</Text>
         </View>
         <TouchableOpacity 
@@ -86,7 +86,7 @@ export default function ChatScreen() {
           style={tw`p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl`}
           activeOpacity={0.7}
         >
-          <RefreshCw size={16} color="#4f46e5" />
+          <RefreshCw size={16} color="#721c3b" />
         </TouchableOpacity>
       </View>
 
@@ -98,15 +98,15 @@ export default function ChatScreen() {
         {/* Chat Feed */}
         {loadingMessages && !messages ? (
           <View style={tw`flex-1 items-center justify-center`}>
-            <ActivityIndicator size="small" color="#4f46e5" />
+            <ActivityIndicator size="small" color="#721c3b" />
           </View>
         ) : !messages || messages.length === 0 ? (
           <ScrollView 
             ref={scrollViewRef}
             contentContainerStyle={tw`flex-grow items-center justify-center p-8`}
           >
-            <View style={tw`w-16 h-16 bg-indigo-50 rounded-2xl items-center justify-center mb-4`}>
-              <MessageSquare size={28} color="#4f46e5" />
+            <View style={tw`w-16 h-16 bg-[#fdf3f5] rounded-2xl items-center justify-center mb-4`}>
+              <MessageSquare size={28} color="#721c3b" />
             </View>
             <Text style={tw`text-slate-800 font-extrabold text-lg`}>No Messages Yet</Text>
             <Text style={tw`text-slate-500 text-sm text-center mt-2 max-w-[240px] leading-5`}>
@@ -130,7 +130,7 @@ export default function ChatScreen() {
                 >
                   {/* Sender Name */}
                   {!isMe && (
-                    <Text style={tw`text-xs font-bold text-indigo-600 mb-1 ml-1`}>
+                    <Text style={tw`text-xs font-bold text-[#721c3b] mb-1 ml-1`}>
                       {msg.senderName}
                     </Text>
                   )}
@@ -139,7 +139,7 @@ export default function ChatScreen() {
                   <View 
                     style={tw`rounded-2xl px-4 py-3 shadow-sm ${
                       isMe 
-                        ? 'bg-indigo-600 rounded-tr-sm border border-indigo-500' 
+                        ? 'bg-[#721c3b] rounded-tr-sm border border-[#5c162f]' 
                         : 'bg-white border border-slate-100 rounded-tl-sm'
                     }`}
                   >
@@ -172,7 +172,7 @@ export default function ChatScreen() {
           <TouchableOpacity
             onPress={handleSend}
             disabled={sending || !inputText.trim()}
-            style={tw`w-11 h-11 bg-indigo-600 rounded-2xl items-center justify-center shadow-md shadow-indigo-100 ${
+            style={tw`w-11 h-11 bg-[#721c3b] rounded-2xl items-center justify-center shadow-md shadow-rose-900/20 ${
               !inputText.trim() ? 'opacity-50' : ''
             }`}
             activeOpacity={0.8}

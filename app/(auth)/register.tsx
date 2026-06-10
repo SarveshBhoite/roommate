@@ -54,7 +54,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-slate-50`}>
+    <SafeAreaView style={tw`flex-1 bg-[#faf7f2]`}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
@@ -68,7 +68,7 @@ export default function RegisterScreen() {
         >
           {/* Header */}
           <View style={tw`items-center mb-6`}>
-            <View style={tw`w-20 h-20 bg-gradient-to-tr bg-indigo-600 rounded-[24px] items-center justify-center shadow-lg shadow-indigo-200 mb-4`}>
+            <View style={tw`w-20 h-20 bg-gradient-to-tr bg-[#721c3b] rounded-[24px] items-center justify-center shadow-lg shadow-rose-900/10 mb-4`}>
               <UserPlus size={36} color="#ffffff" />
             </View>
             <Text style={tw`text-3xl font-black text-slate-900 tracking-tight`}>Get Started</Text>
@@ -76,7 +76,7 @@ export default function RegisterScreen() {
           </View>
 
           {/* Form */}
-          <View style={tw`bg-white rounded-[32px] p-7 shadow-xl shadow-slate-100/70 border border-slate-100/60`}>
+          <View style={tw`bg-white rounded-[32px] p-7 shadow-xl shadow-stone-100/70 border border-stone-200/40`}>
             <Text style={tw`text-xl font-bold text-slate-900 tracking-tight mb-5`}>Register Profile</Text>
 
             {/* Name */}
@@ -146,7 +146,7 @@ export default function RegisterScreen() {
 
             {/* Submit */}
             <TouchableOpacity
-              style={tw`bg-indigo-600 rounded-2xl py-4 flex-row items-center justify-center shadow-lg shadow-indigo-200/60 ${loading ? 'opacity-85' : ''}`}
+              style={tw`bg-[#721c3b] rounded-2xl py-4 flex-row items-center justify-center shadow-lg shadow-rose-900/20 ${loading ? 'opacity-85' : ''}`}
               onPress={handleRegister}
               disabled={loading}
             >
@@ -162,7 +162,7 @@ export default function RegisterScreen() {
           <View style={tw`flex-row justify-center mt-6`}>
             <Text style={tw`text-slate-400 text-sm font-medium`}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-              <Text style={tw`text-indigo-600 font-bold text-sm`}>Sign In</Text>
+              <Text style={tw`text-[#721c3b] font-bold text-sm`}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

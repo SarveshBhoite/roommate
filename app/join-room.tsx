@@ -101,7 +101,7 @@ export default function JoinRoomScreen() {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-slate-50`}>
+    <SafeAreaView style={tw`flex-1 bg-[#faf7f2]`}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -114,13 +114,13 @@ export default function JoinRoomScreen() {
               <Text style={tw`text-2xl font-black text-slate-900 tracking-tight`}>Welcome, {user?.name}!</Text>
               <Text style={tw`text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider`}>Create or join a roommate hub</Text>
             </View>
-            <TouchableOpacity onPress={handleLogout} style={tw`p-3.5 bg-white border border-slate-100 shadow-sm rounded-2xl`}>
+            <TouchableOpacity onPress={handleLogout} style={tw`p-3.5 bg-white border border-stone-200/45 shadow-sm rounded-2xl`}>
               <LogOut size={18} color="#ef4444" />
             </TouchableOpacity>
           </View>
 
           {isPending ? (
-            <View style={tw`bg-white rounded-[32px] p-8 shadow-xl shadow-slate-100/70 border border-slate-100/60 items-center py-12`}>
+            <View style={tw`bg-white rounded-[32px] p-8 shadow-xl shadow-stone-100/70 border border-stone-200/40 items-center py-12`}>
               <View style={tw`w-16 h-16 bg-amber-50 border border-amber-100 rounded-3xl items-center justify-center mb-5`}>
                 <UserCheck size={30} color="#d97706" />
               </View>
@@ -144,10 +144,10 @@ export default function JoinRoomScreen() {
           ) : (
             <View style={tw`gap-6`}>
               {/* Card 1: Join Room */}
-              <View style={tw`bg-white rounded-[32px] p-7 shadow-xl shadow-slate-100/70 border border-slate-100/60`}>
+              <View style={tw`bg-white rounded-[32px] p-7 shadow-xl shadow-stone-100/70 border border-stone-200/40`}>
                 <View style={tw`flex-row items-center gap-3.5 mb-4`}>
-                  <View style={tw`w-11 h-11 bg-indigo-50 border border-indigo-100 rounded-2xl items-center justify-center`}>
-                    <ArrowRight size={20} color="#4f46e5" />
+                  <View style={tw`w-11 h-11 bg-rose-50 border border-rose-100 rounded-2xl items-center justify-center`}>
+                    <ArrowRight size={20} color="#721c3b" />
                   </View>
                   <Text style={tw`text-lg font-bold text-slate-900 tracking-tight`}>Join Existing Room</Text>
                 </View>
@@ -164,7 +164,7 @@ export default function JoinRoomScreen() {
                   autoCapitalize="characters"
                 />
                 <TouchableOpacity
-                  style={tw`bg-indigo-600 rounded-2xl py-4 flex-row items-center justify-center shadow-lg shadow-indigo-200/60 ${loadingJoin ? 'opacity-85' : ''}`}
+                  style={tw`bg-[#721c3b] rounded-2xl py-4 flex-row items-center justify-center shadow-lg shadow-rose-900/20 ${loadingJoin ? 'opacity-85' : ''}`}
                   onPress={handleJoin}
                   disabled={loadingJoin}
                 >
@@ -184,7 +184,7 @@ export default function JoinRoomScreen() {
               </View>
 
               {/* Card 2: Create Room */}
-              <View style={tw`bg-white rounded-[32px] p-7 shadow-xl shadow-slate-100/70 border border-slate-100/60`}>
+              <View style={tw`bg-white rounded-[32px] p-7 shadow-xl shadow-stone-100/70 border border-stone-200/40`}>
                 <View style={tw`flex-row items-center gap-3.5 mb-4`}>
                   <View style={tw`w-11 h-11 bg-emerald-50 border border-emerald-100 rounded-2xl items-center justify-center`}>
                     <Home size={20} color="#10b981" />

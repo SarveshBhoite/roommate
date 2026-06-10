@@ -93,7 +93,7 @@ export default function BillsScreen() {
               contact: user.phone || '',
               name: user.name
             },
-            theme: { color: '#4f46e5' }
+            theme: { color: '#721c3b' }
           };
 
           RazorpayCheckout.open(options).then(async (data: any) => {
@@ -130,13 +130,13 @@ export default function BillsScreen() {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-slate-50`} edges={['top']}>
+    <SafeAreaView style={tw`flex-1 bg-[#faf7f2]`} edges={['top']}>
       <StatusBar style="dark" />
 
       {/* Header */}
       <View style={tw`px-6 py-4 bg-white border-b border-slate-100/80 flex-row justify-between items-center shadow-sm shadow-slate-100/15`}>
         <View>
-          <Text style={tw`text-[10px] font-black text-indigo-600 tracking-widest uppercase`}>Roommate Bills</Text>
+          <Text style={tw`text-[10px] font-black text-[#721c3b] tracking-widest uppercase`}>Roommate Bills</Text>
           <Text style={tw`text-xl font-bold text-slate-900 tracking-tight`}>Shared Expenses</Text>
         </View>
         <TouchableOpacity onPress={() => refetchBills()} style={tw`p-2.5 bg-slate-50 border border-slate-100 rounded-full shadow-sm`}>
@@ -148,7 +148,7 @@ export default function BillsScreen() {
         
         {/* Active Bills Feed */}
         {loadingBills ? (
-          <ActivityIndicator size="small" color="#4f46e5" />
+          <ActivityIndicator size="small" color="#721c3b" />
         ) : !bills || bills.length === 0 ? (
           <View style={tw`bg-white rounded-[24px] p-8 items-center border border-slate-100 shadow-sm shadow-slate-100/40 mt-2`}>
             <DollarSign size={32} color="#94a3b8" />
@@ -234,7 +234,7 @@ export default function BillsScreen() {
                   {status === 'unpaid' && (
                     <TouchableOpacity
                       onPress={() => handlePayNow(bill)}
-                      style={tw`bg-indigo-600 rounded-2xl px-5 py-3 shadow-lg shadow-indigo-200/50`}
+                      style={tw`bg-[#721c3b] rounded-2xl px-5 py-3 shadow-lg shadow-rose-900/20`}
                     >
                       <Text style={tw`text-white font-bold text-xs uppercase tracking-wider`}>Pay Now</Text>
                     </TouchableOpacity>
@@ -253,7 +253,7 @@ export default function BillsScreen() {
         transparent={true}
         onRequestClose={() => setPaymentModalVisible(false)}
       >
-        <View style={tw`flex-1 bg-slate-950/45 justify-end`}>
+        <View style={tw`flex-1 bg-slate-900/60 justify-end`}>
           <View style={tw`bg-white rounded-t-[32px] p-6 shadow-2xl`}>
             
             {/* Header */}
@@ -273,8 +273,8 @@ export default function BillsScreen() {
               <Text style={tw`text-3xl font-black text-slate-900 mt-1`}>₹{activeBill ? getUserShare(activeBill) : 0}</Text>
               
               <View style={tw`flex-row items-center gap-1.5 mt-3.5 bg-white border border-slate-100 px-3 py-1.5 rounded-full shadow-sm`}>
-                <ShieldCheck size={12} color="#4f46e5" />
-                <Text style={tw`text-[9px] text-indigo-600 font-bold uppercase tracking-wider`}>Safe & Encrypted Checkout</Text>
+                <ShieldCheck size={12} color="#721c3b" />
+                <Text style={tw`text-[9px] text-[#721c3b] font-bold uppercase tracking-wider`}>Safe & Encrypted Checkout</Text>
               </View>
             </View>
 
@@ -282,7 +282,7 @@ export default function BillsScreen() {
             <TouchableOpacity
               onPress={executeRealPayment}
               disabled={loadingPayment}
-              style={tw`bg-indigo-600 rounded-2xl py-4 flex-row items-center justify-center shadow-lg shadow-indigo-200/50 mb-2 ${loadingPayment ? 'opacity-85' : ''}`}
+              style={tw`bg-[#721c3b] rounded-2xl py-4 flex-row items-center justify-center shadow-lg shadow-rose-900/20 mb-2 ${loadingPayment ? 'opacity-85' : ''}`}
             >
               {loadingPayment ? (
                 <>
