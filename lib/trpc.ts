@@ -7,7 +7,7 @@ import type { AppRouter as OriginalAppRouter } from '../backend/trpc/app-router'
 export type AppRouter = OriginalAppRouter;
 export const trpc = createTRPCReact<AppRouter>() as any;
 
-const getBaseUrl = () => {
+export const getBaseUrl = () => {
   // Try to read environment variable
   const url = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
   

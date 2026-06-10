@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
 import tw from 'twrnc';
-import { trpc, formatError } from '@/lib/trpc';
+import { trpc, formatError, getBaseUrl } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
 import { DollarSign, CheckCircle2, AlertCircle, RefreshCw, X, ShieldCheck } from 'lucide-react-native';
 
@@ -42,27 +42,35 @@ export default function BillsScreen() {
     setPaymentModalVisible(true);
   };
 
-  const executeMockPayment = async () => {
+  const executeRealPayment = async () => {
     if (!activeBill) return;
     setLoadingPayment(true);
 
     try {
-      // 1. Create Razorpay order (backend mock falls back automatically if keys are unset)
-      const order = await payOrderMutation.mutateAsync({ contributionId: activeBill._id });
+      const url = `${getBaseUrl()}/pay/${activeBill._id}/${user?._id}`;
+      // Open secure web checkout
+      await Linking.openURL(url);
       
-      // Simulate Razorpay Gateway processing delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // 2. Verify payment (mock orders are auto-verified)
-      const mockPaymentId = `pay_mock_${Math.random().toString(36).substring(2, 11)}`;
-      await verifyPaymentMutation.mutateAsync({
-        contributionId: activeBill._id,
-        razorpayOrderId: order.orderId,
-        razorpayPaymentId: mockPaymentId
-      });
+      // Prompt user to refresh after payment
+      Alert.alert(
+        'Payment Gateway Opened',
+        'We have launched the secure Razorpay payment page in your browser. After completing the payment, please press "OK" to check payment status.',
+        [
+          {
+            text: 'OK',
+            onPress: async () => {
+              setLoadingPayment(true);
+              setTimeout(async () => {
+                await refetchBills();
+                setLoadingPayment(false);
+                setPaymentModalVisible(false);
+              }, 1000);
+            }
+          }
+        ]
+      );
     } catch (error: any) {
       Alert.alert('Payment Error', formatError(error));
-    } finally {
       setLoadingPayment(false);
     }
   };
@@ -225,22 +233,22 @@ export default function BillsScreen() {
 
             {/* Submit Button */}
             <TouchableOpacity
-              onPress={executeMockPayment}
+              onPress={executeRealPayment}
               disabled={loadingPayment}
               style={tw`bg-indigo-600 rounded-xl py-3.5 flex-row items-center justify-center shadow-lg shadow-indigo-100 mb-2 ${loadingPayment ? 'opacity-80' : ''}`}
             >
               {loadingPayment ? (
                 <>
                   <ActivityIndicator color="#ffffff" size="small" style={tw`mr-2`} />
-                  <Text style={tw`text-white font-bold text-sm`}>Contacting bank gateway...</Text>
+                  <Text style={tw`text-white font-bold text-sm`}>Redirecting to Gateway...</Text>
                 </>
               ) : (
-                <Text style={tw`text-white font-bold text-sm`}>Simulate Payment</Text>
+                <Text style={tw`text-white font-bold text-sm`}>Pay Securely via Razorpay</Text>
               )}
             </TouchableOpacity>
 
             <Text style={tw`text-[10px] text-slate-400 text-center py-2 font-medium`}>
-              Payments are simulated when backend integration credentials are unset.
+              Secure payment gateway will open in your mobile browser.
             </Text>
           </View>
         </View>

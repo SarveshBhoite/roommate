@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import tw from 'twrnc';
 import { trpc, formatError } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
-import { User, Mail, Phone, Lock, UserPlus } from 'lucide-react-native';
+import { User, Mail, Phone, Lock, UserPlus, Eye, EyeOff } from 'lucide-react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -15,6 +15,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const registerMutation = trpc.auth.register.useMutation({
@@ -130,9 +131,16 @@ export default function RegisterScreen() {
               placeholderTextColor="#94a3b8"
               value={password}
               onChangeText={setPassword}
-              secureTextEntry
+              secureTextEntry={!showPassword}
               autoCapitalize="none"
             />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={tw`p-1.5`}>
+              {showPassword ? (
+                <EyeOff size={18} color="#94a3b8" />
+              ) : (
+                <Eye size={18} color="#94a3b8" />
+              )}
+            </TouchableOpacity>
           </View>
 
           {/* Submit */}

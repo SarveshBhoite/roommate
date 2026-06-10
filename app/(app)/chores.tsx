@@ -97,10 +97,9 @@ export default function ChoresScreen() {
               }
 
               const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [4, 3],
-                quality: 0.4, // Compress image to reduce base64 size for fast upload
+                mediaTypes: ['images'],
+                allowsEditing: false,
+                quality: 0.25, // Compress image to reduce base64 size for fast upload
                 base64: true,
               });
 
@@ -415,6 +414,17 @@ export default function ChoresScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Loading Overlay for Chore Verification Upload */}
+      {(markDoneMutation.isLoading || markDoneMutation.isPending) && (
+        <View style={tw`absolute inset-0 bg-black/60 items-center justify-center z-50`}>
+          <View style={tw`bg-white p-6 rounded-3xl shadow-xl items-center`}>
+            <ActivityIndicator size="large" color="#4f46e5" />
+            <Text style={tw`text-slate-800 font-bold text-sm mt-3`}>Uploading Photo Proof...</Text>
+            <Text style={tw`text-slate-400 text-xs mt-1`}>Please wait, updating chore turns</Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
