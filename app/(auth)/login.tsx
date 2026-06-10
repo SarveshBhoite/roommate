@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import tw from 'twrnc';
-import { trpc } from '@/lib/trpc';
+import { trpc, formatError } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
 import { Mail, Lock, LogIn } from 'lucide-react-native';
 
@@ -29,7 +29,7 @@ export default function LoginScreen() {
     },
     onError: (error: any) => {
       setLoading(false);
-      Alert.alert('Login Failed', error.message || 'Something went wrong');
+      Alert.alert('Login Failed', formatError(error));
     }
   });
 
@@ -45,7 +45,15 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={tw`flex-1 bg-slate-50`}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={tw`flex-grow justify-center px-6 py-12`}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+        style={tw`flex-1`}
+      >
+        <ScrollView 
+          contentContainerStyle={tw`flex-grow justify-center px-6 py-12`}
+          automaticallyAdjustKeyboardInsets={true}
+        >
         {/* Brand/Header */}
         <View style={tw`items-center mb-10`}>
           <View style={tw`w-16 h-16 bg-indigo-600 rounded-2xl items-center justify-center shadow-lg shadow-indigo-200 mb-4`}>
@@ -111,6 +119,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

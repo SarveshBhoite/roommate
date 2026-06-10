@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import createContextHook from '@nkzw/create-context-hook';
 
@@ -16,6 +16,7 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastViewedChat, setLastViewedChatState] = useState<string>('');
 
   useEffect(() => {
     loadAuthData();
@@ -33,10 +34,14 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     try {
       const storedToken = await AsyncStorage.getItem('authToken');
       const storedUser = await AsyncStorage.getItem('user');
+      const storedLastViewed = await AsyncStorage.getItem('lastViewedChat');
 
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
+      }
+      if (storedLastViewed) {
+        setLastViewedChatState(storedLastViewed);
       }
     } catch (error) {
       console.error('Error loading auth data:', error);
@@ -45,26 +50,33 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     }
   };
 
-  const login = async (token: string, user: User) => {
+  const login = useCallback(async (token: string, user: User) => {
     await AsyncStorage.setItem('authToken', token);
     await AsyncStorage.setItem('user', JSON.stringify(user));
     setToken(token);
     setUser(user);
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await AsyncStorage.removeItem('authToken');
     await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem('lastViewedChat');
 
     global.authToken = undefined;
     setToken(null);
     setUser(null);
-  };
+    setLastViewedChatState('');
+  }, []);
 
-  const updateUser = (updatedUser: User) => {
+  const updateUser = useCallback((updatedUser: User) => {
     setUser(updatedUser);
     AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-  };
+  }, []);
+
+  const setLastViewedChat = useCallback((timestamp: string) => {
+    setLastViewedChatState(timestamp);
+    AsyncStorage.setItem('lastViewedChat', timestamp);
+  }, []);
 
   return {
     user,
@@ -74,5 +86,7 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     login,
     logout,
     updateUser,
+    lastViewedChat,
+    setLastViewedChat,
   };
 });

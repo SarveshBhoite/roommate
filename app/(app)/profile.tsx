@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect, useRouter } from 'expo-router';
 import tw from 'twrnc';
-import { trpc } from '@/lib/trpc';
+import { trpc, formatError } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
 import { 
   User, 
@@ -34,6 +34,7 @@ export default function ProfileScreen() {
   const [createChoreModal, setCreateChoreModal] = useState(false);
   const [createBillModal, setCreateBillModal] = useState(false);
   const [editNoticeModal, setEditNoticeModal] = useState(false);
+  const [transferAdminModal, setTransferAdminModal] = useState(false);
 
   // Form states for Admin Panels
   const [noticeText, setNoticeText] = useState('');
@@ -95,7 +96,7 @@ export default function ProfileScreen() {
       Alert.alert('Chore Loop Created', 'Work rotation is now active.');
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.message || 'Could not create chore');
+      Alert.alert('Error', formatError(err));
     }
   });
 
@@ -108,7 +109,7 @@ export default function ProfileScreen() {
       Alert.alert('Bill Shared', 'Split contribution has been sent to roommates.');
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.message || 'Could not split bill');
+      Alert.alert('Error', formatError(err));
     }
   });
 
@@ -118,7 +119,18 @@ export default function ProfileScreen() {
       Alert.alert('Roommate Removed', 'Roommate kicked successfully.');
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.message);
+      Alert.alert('Error', formatError(err));
+    }
+  });
+
+  const transferAdminMutation = trpc.room.transferAdmin.useMutation({
+    onSuccess: (data: any) => {
+      setTransferAdminModal(false);
+      updateUser({ ...user!, role: 'member' });
+      Alert.alert('Admin Transferred', data.message || 'You are now a regular member.');
+    },
+    onError: (err: any) => {
+      Alert.alert('Error', formatError(err));
     }
   });
 
@@ -186,6 +198,21 @@ export default function ProfileScreen() {
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Remove', style: 'destructive', onPress: () => kickMutation.mutate({ targetUserId }) }
+      ]
+    );
+  };
+
+  const handleTransferAdmin = (targetUserId: string, name: string) => {
+    Alert.alert(
+      'Transfer Admin Rights',
+      `Are you sure you want to transfer Admin rights to ${name}? This action CANNOT be undone, and you will lose admin privileges.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Transfer Role', 
+          style: 'destructive', 
+          onPress: () => transferAdminMutation.mutate({ targetUserId }) 
+        }
       ]
     );
   };
@@ -326,6 +353,17 @@ export default function ProfileScreen() {
                 </View>
               </TouchableOpacity>
 
+              {/* Transfer Admin */}
+              <TouchableOpacity
+                onPress={() => setTransferAdminModal(true)}
+                style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
+              >
+                <View style={tw`flex-row items-center gap-3.5`}>
+                  <User size={18} color="#ef4444" />
+                  <Text style={tw`text-sm font-bold text-slate-700`}>Transfer Admin Role</Text>
+                </View>
+              </TouchableOpacity>
+
               {/* Kick Members List */}
               <View style={tw`mt-2`}>
                 <Text style={tw`text-xs font-bold text-slate-400 mb-2 uppercase`}>Kick Roommates</Text>
@@ -449,8 +487,8 @@ export default function ProfileScreen() {
                     style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
                   >
                     <Text style={tw`text-sm font-semibold text-slate-700`}>{m.name}</Text>
-                    <View style={tw`w-5 h-5 border rounded flex-center ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
-                      {isChecked && <Check size={12} color="#fff" />}
+                    <View style={tw`w-5 h-5 border rounded items-center justify-center ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
+                      {isChecked && <Check size={10} color="#ffffff" style={{ alignSelf: 'center' }} />}
                     </View>
                   </TouchableOpacity>
                 );
@@ -503,8 +541,8 @@ export default function ProfileScreen() {
                     style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
                   >
                     <Text style={tw`text-sm font-semibold text-slate-700`}>{m.name}</Text>
-                    <View style={tw`w-5 h-5 border rounded flex-center ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
-                      {isChecked && <Check size={12} color="#fff" />}
+                    <View style={tw`w-5 h-5 border rounded items-center justify-center ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
+                      {isChecked && <Check size={10} color="#ffffff" style={{ alignSelf: 'center' }} />}
                     </View>
                   </TouchableOpacity>
                 );
@@ -514,6 +552,45 @@ export default function ProfileScreen() {
             <TouchableOpacity onPress={handleCreateBill} style={tw`bg-indigo-600 rounded-xl py-3.5 items-center`}>
               <Text style={tw`text-white font-bold`}>Split cost equally</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ADMIN MODAL 5: Transfer Admin */}
+      <Modal visible={transferAdminModal} animationType="slide" transparent>
+        <View style={tw`flex-1 bg-black/55 justify-end`}>
+          <View style={tw`bg-white rounded-t-3xl p-6 max-h-[75%]`}>
+            <View style={tw`flex-row justify-between items-center mb-5`}>
+              <Text style={tw`text-lg font-bold text-slate-800`}>Transfer Admin Role</Text>
+              <TouchableOpacity onPress={() => setTransferAdminModal(false)}>
+                <X size={20} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={tw`text-xs text-slate-400 mb-4`}>
+              Select a roommate to transfer Admin status to. Note: You will immediately lose admin controls.
+            </Text>
+
+            {members?.filter((m: any) => m._id !== user?._id).length === 0 ? (
+              <Text style={tw`text-slate-400 text-sm text-center py-10 font-medium`}>No other roommates in this room.</Text>
+            ) : (
+              <ScrollView>
+                {members?.filter((m: any) => m._id !== user?._id).map((m: any) => (
+                  <View key={m._id} style={tw`flex-row justify-between items-center py-3.5 border-b border-slate-100`}>
+                    <View style={tw`flex-1 mr-2`}>
+                      <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
+                      <Text style={tw`text-xs text-slate-400 mt-0.5`}>{m.phone}</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => handleTransferAdmin(m._id, m.name)}
+                      style={tw`bg-rose-600 rounded-xl px-4 py-2`}
+                    >
+                      <Text style={tw`text-white font-bold text-xs`}>Transfer</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
           </View>
         </View>
       </Modal>

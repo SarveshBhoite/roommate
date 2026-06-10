@@ -5,6 +5,7 @@ const ChoreLogSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   userName: { type: String, required: true },
   choreName: { type: String, required: true },
+  imageUrl: { type: String, default: null },
   completedAt: { type: Date, default: Date.now }
 });
 

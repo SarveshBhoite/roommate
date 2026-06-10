@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import tw from 'twrnc';
-import { trpc } from '@/lib/trpc';
+import { trpc, formatError } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
 import { User, Mail, Phone, Lock, UserPlus } from 'lucide-react-native';
 
@@ -25,13 +25,18 @@ export default function RegisterScreen() {
     },
     onError: (error: any) => {
       setLoading(false);
-      Alert.alert('Registration Failed', error.message || 'Something went wrong');
+      Alert.alert('Registration Failed', formatError(error));
     }
   });
 
   const handleRegister = () => {
     if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
       Alert.alert('Validation Error', 'Please fill in all fields');
+      return;
+    }
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      Alert.alert('Validation Error', 'Phone number must be exactly 10 digits');
       return;
     }
     if (password.length < 6) {
@@ -50,7 +55,15 @@ export default function RegisterScreen() {
   return (
     <SafeAreaView style={tw`flex-1 bg-slate-50`}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={tw`flex-grow justify-center px-6 py-12`}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+        style={tw`flex-1`}
+      >
+        <ScrollView 
+          contentContainerStyle={tw`flex-grow justify-center px-6 py-12`}
+          automaticallyAdjustKeyboardInsets={true}
+        >
         {/* Header */}
         <View style={tw`items-center mb-8`}>
           <View style={tw`w-16 h-16 bg-indigo-600 rounded-2xl items-center justify-center shadow-lg shadow-indigo-200 mb-4`}>
@@ -103,6 +116,7 @@ export default function RegisterScreen() {
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
+              maxLength={10}
             />
           </View>
 
@@ -143,6 +157,7 @@ export default function RegisterScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

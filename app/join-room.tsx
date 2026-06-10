@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import tw from 'twrnc';
-import { trpc } from '@/lib/trpc';
+import { trpc, formatError } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
 import { Home, LogOut, ArrowRight, UserCheck } from 'lucide-react-native';
 
@@ -47,7 +47,7 @@ export default function JoinRoomScreen() {
         Alert.alert('Error', 'Could not fetch user status');
       }
     } catch (error: any) {
-      Alert.alert('Error checking status', error.message || 'Something went wrong');
+      Alert.alert('Error checking status', formatError(error));
     }
   };
 
@@ -61,7 +61,7 @@ export default function JoinRoomScreen() {
     },
     onError: (error: any) => {
       setLoadingCreate(false);
-      Alert.alert('Failed to Create Room', error.message || 'Something went wrong');
+      Alert.alert('Failed to Create Room', formatError(error));
     }
   });
 
@@ -73,7 +73,7 @@ export default function JoinRoomScreen() {
     },
     onError: (error: any) => {
       setLoadingJoin(false);
-      Alert.alert('Failed to Join Room', error.message || 'Something went wrong');
+      Alert.alert('Failed to Join Room', formatError(error));
     }
   });
 
@@ -103,7 +103,11 @@ export default function JoinRoomScreen() {
   return (
     <SafeAreaView style={tw`flex-1 bg-slate-50`}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={tw`px-6 py-8 flex-grow justify-center`}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={tw`flex-1`}
+      >
+        <ScrollView contentContainerStyle={tw`px-6 py-8 flex-grow justify-center`}>
         {/* Header */}
         <View style={tw`flex-row justify-between items-center mb-8`}>
           <View>
@@ -212,6 +216,7 @@ export default function JoinRoomScreen() {
           </View>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

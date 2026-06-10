@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
 import tw from 'twrnc';
-import { trpc } from '@/lib/trpc';
+import * as ImagePicker from 'expo-image-picker';
+import { trpc, formatError } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
 import { CheckSquare, ArrowLeftRight, Check, X, RefreshCw, Settings } from 'lucide-react-native';
 
@@ -35,7 +36,7 @@ export default function ChoresScreen() {
       Alert.alert('Success', 'Chore completed! Active turn rotated.');
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.message || 'Could not complete task');
+      Alert.alert('Error', formatError(err));
     }
   });
 
@@ -45,7 +46,7 @@ export default function ChoresScreen() {
       Alert.alert('Request Sent', 'Swap request sent successfully! Awaiting response.');
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.message || 'Could not send swap request');
+      Alert.alert('Error', formatError(err));
     }
   });
 
@@ -56,7 +57,7 @@ export default function ChoresScreen() {
       Alert.alert('Success', data.status === 'accepted' ? 'Swap request accepted!' : 'Swap request declined.');
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.message || 'Action failed');
+      Alert.alert('Error', formatError(err));
     }
   });
 
@@ -67,7 +68,7 @@ export default function ChoresScreen() {
       Alert.alert('Chore Updated', 'Chore rotation sequence has been updated successfully!');
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.message || 'Could not update chore sequence');
+      Alert.alert('Error', formatError(err));
     }
   });
 
@@ -79,8 +80,41 @@ export default function ChoresScreen() {
     }, [])
   );
 
-  const handleMarkDone = (choreId: string) => {
-    markDoneMutation.mutate({ choreId });
+  const handleMarkDone = async (choreId: string) => {
+    Alert.alert(
+      'Photo Proof Required',
+      'Please take a photo proof of the completed chore to submit as validation.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Launch Camera 📷',
+          onPress: async () => {
+            try {
+              const { status } = await ImagePicker.requestCameraPermissionsAsync();
+              if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'Camera permission is required to submit photo proof.');
+                return;
+              }
+
+              const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.4, // Compress image to reduce base64 size for fast upload
+                base64: true,
+              });
+
+              if (!result.canceled && result.assets && result.assets[0]?.base64) {
+                const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+                markDoneMutation.mutate({ choreId, photoBase64: base64Image });
+              }
+            } catch (error: any) {
+              Alert.alert('Camera Error', error.message || 'Failed to capture photo');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const openSwapModal = (chore: any) => {
@@ -364,8 +398,8 @@ export default function ChoresScreen() {
                     style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
                   >
                     <Text style={tw`text-sm font-semibold text-slate-700`}>{m.name}</Text>
-                    <View style={tw`w-5 h-5 border rounded flex items-center justify-center ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
-                      {isChecked && <Check size={12} color="#fff" />}
+                    <View style={tw`w-5 h-5 border rounded items-center justify-center ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
+                      {isChecked && <Check size={10} color="#ffffff" style={{ alignSelf: 'center' }} />}
                     </View>
                   </TouchableOpacity>
                 );

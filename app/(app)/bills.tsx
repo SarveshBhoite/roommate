@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
 import tw from 'twrnc';
-import { trpc } from '@/lib/trpc';
+import { trpc, formatError } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
 import { DollarSign, CheckCircle2, AlertCircle, RefreshCw, X, ShieldCheck } from 'lucide-react-native';
 
@@ -27,7 +27,7 @@ export default function BillsScreen() {
       Alert.alert('Payment Successful!', 'Your contribution has been marked as paid.');
     },
     onError: (err: any) => {
-      Alert.alert('Payment Error', err.message || 'Signature verification failed');
+      Alert.alert('Payment Error', formatError(err));
     }
   });
 
@@ -61,7 +61,7 @@ export default function BillsScreen() {
         razorpayPaymentId: mockPaymentId
       });
     } catch (error: any) {
-      Alert.alert('Payment Error', error.message || 'Payment flow failed');
+      Alert.alert('Payment Error', formatError(error));
     } finally {
       setLoadingPayment(false);
     }
@@ -117,7 +117,14 @@ export default function BillsScreen() {
                 <View style={tw`flex-row justify-between items-start mb-3`}>
                   <View style={tw`flex-1 mr-2`}>
                     <Text style={tw`text-base font-bold text-slate-800`}>{bill.title}</Text>
-                    <Text style={tw`text-xs text-slate-400 mt-0.5`}>Total Shared: ₹{bill.totalAmount}</Text>
+                    <Text style={tw`text-[10px] text-slate-400 mt-1`}>
+                      📅 {new Date(bill.createdAt).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </Text>
+                    <Text style={tw`text-xs text-slate-400 mt-1.5`}>Total Shared: ₹{bill.totalAmount}</Text>
                   </View>
                   <View style={tw`flex-row items-center gap-1.5`}>
                     {status === 'paid' ? (
@@ -134,8 +141,36 @@ export default function BillsScreen() {
                   </View>
                 </View>
 
+                {/* Admin View: Split Statuses */}
+                {user?.role === 'admin' && (
+                  <View style={tw`mt-2.5 mb-3 pt-3 border-t border-slate-100`}>
+                    <Text style={tw`text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2`}>Split Breakdown</Text>
+                    <View style={tw`gap-1.5`}>
+                      {bill.splits.map((split: any) => (
+                        <View key={split._id || split.userId?._id} style={tw`flex-row justify-between items-center`}>
+                          <Text style={tw`text-xs font-semibold text-slate-600`}>• {split.userId?.name || 'Unknown User'}</Text>
+                          <View style={tw`flex-row items-center gap-2`}>
+                            <Text style={tw`text-xs font-bold text-slate-700`}>₹{split.shareAmount}</Text>
+                            <View style={tw`px-2 py-0.5 rounded-lg border ${
+                              split.status === 'paid' 
+                                ? 'bg-emerald-50 border-emerald-100' 
+                                : 'bg-amber-50 border-amber-100'
+                            }`}>
+                              <Text style={tw`text-[9px] font-bold uppercase ${
+                                split.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'
+                              }`}>
+                                {split.status}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
                 {/* Info & Pay Button */}
-                <View style={tw`flex-row justify-between items-center mt-3 pt-3 border-t border-slate-50`}>
+                <View style={tw`flex-row justify-between items-center mt-3 pt-3 border-t border-slate-100`}>
                   <View>
                     <Text style={tw`text-xs text-slate-400`}>Your Share</Text>
                     <Text style={tw`text-xl font-extrabold text-slate-800`}>₹{share}</Text>

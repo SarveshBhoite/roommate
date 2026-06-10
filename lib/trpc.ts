@@ -32,6 +32,26 @@ export const trpcClient = trpc.createClient({
   ],
 });
 
+export const formatError = (error: any): string => {
+  if (!error) return 'Something went wrong';
+
+  // If there's a JSON array string representing validation issues (e.g. Zod)
+  if (error.message && (error.message.startsWith('[') || error.message.startsWith('{'))) {
+    try {
+      const parsed = JSON.parse(error.message);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item: any) => item.message).join('\n');
+      } else if (parsed.message) {
+        return parsed.message;
+      }
+    } catch (e) {
+      // Fallback if JSON parsing fails
+    }
+  }
+
+  return error.message || 'Something went wrong';
+};
+
 declare global {
   var authToken: string | undefined;
 }

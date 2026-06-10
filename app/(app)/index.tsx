@@ -1,14 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Animated, Easing, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Animated, Easing, ActivityIndicator, FlatList, Clipboard, Alert, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
 import tw from 'twrnc';
 import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/contexts/auth-context';
 import { Bell, Home, Users, CheckCircle, Clock } from 'lucide-react-native';
 
 export default function DashboardScreen() {
+  const { user } = useAuth();
   const [marqueeText, setMarqueeText] = useState('');
+  const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
   const marqueeContainerWidth = useRef(0);
   const marqueeTextWidth = useRef(0);
@@ -20,6 +23,9 @@ export default function DashboardScreen() {
   const { data: members, refetch: refetchMembers, isLoading: loadingMembers } = trpc.room.listMembers.useQuery(undefined, {
     retry: false
   });
+  const { data: chores, refetch: refetchChores, isLoading: loadingChores } = trpc.chore.list.useQuery(undefined, {
+    retry: false
+  });
   const { data: logs, refetch: refetchLogs, isLoading: loadingLogs } = trpc.chore.getLogs.useQuery(undefined, {
     retry: false
   });
@@ -29,9 +35,17 @@ export default function DashboardScreen() {
     React.useCallback(() => {
       refetchRoom();
       refetchMembers();
+      refetchChores();
       refetchLogs();
     }, [])
   );
+
+  const copyToClipboard = () => {
+    if (room?.code) {
+      Clipboard.setString(room.code);
+      Alert.alert('Code Copied!', 'Room Code has been copied to your clipboard.');
+    }
+  };
 
   useEffect(() => {
     if (room?.noticeMarquee) {
@@ -85,9 +99,12 @@ export default function DashboardScreen() {
         </View>
         <View style={tw`flex-row gap-2`}>
           {room?.code && (
-            <View style={tw`bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100`}>
-              <Text style={tw`text-xs font-bold text-indigo-600`}>Code: {room.code}</Text>
-            </View>
+            <TouchableOpacity 
+              onPress={copyToClipboard}
+              style={tw`bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 flex-row items-center gap-1`}
+            >
+              <Text style={tw`text-xs font-bold text-indigo-600`}>Code: {room.code} 📋</Text>
+            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -128,6 +145,37 @@ export default function DashboardScreen() {
           )}
         </View>
 
+        {/* Chore Rotations / Active Turns */}
+        <View style={tw`mb-6`}>
+          <Text style={tw`text-sm font-bold text-slate-600 mb-3 uppercase tracking-wider`}>Chore Active Turns</Text>
+          <View style={tw`bg-white rounded-3xl p-5 shadow-sm border border-slate-100`}>
+            {loadingChores ? (
+              <ActivityIndicator size="small" color="#4f46e5" />
+            ) : !chores || chores.length === 0 ? (
+              <View style={tw`items-center py-6`}>
+                <Text style={tw`text-sm text-slate-400 font-medium`}>No chores created yet.</Text>
+              </View>
+            ) : (
+              chores.map((chore: any) => {
+                const activeUser = chore.rotationOrder[chore.currentIndex];
+                const isActiveUserSelf = activeUser?._id === user?._id;
+                return (
+                  <View key={chore._id} style={tw`flex-row justify-between items-center py-3 border-b border-slate-50 last:border-b-0`}>
+                    <Text style={tw`text-sm font-bold text-slate-700`}>{chore.name}</Text>
+                    <View style={tw`flex-row items-center gap-2`}>
+                      <View style={tw`px-3 py-1 rounded-xl ${isActiveUserSelf ? 'bg-indigo-50 border border-indigo-100' : 'bg-slate-50 border border-slate-100'}`}>
+                        <Text style={tw`text-xs font-semibold ${isActiveUserSelf ? 'text-indigo-600' : 'text-slate-600'}`}>
+                          👤 {activeUser ? activeUser.name : 'Nobody'} {isActiveUserSelf ? '(You)' : ''}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })
+            )}
+          </View>
+        </View>
+
         {/* Activity Logs Feed */}
         <View style={tw`mb-10`}>
           <Text style={tw`text-sm font-bold text-slate-600 mb-3 uppercase tracking-wider`}>Chore Activity Log</Text>
@@ -140,30 +188,76 @@ export default function DashboardScreen() {
                 <Text style={tw`text-sm text-slate-400 mt-2 font-medium`}>No chores completed yet.</Text>
               </View>
             ) : (
-              logs.map((log: any) => (
-                <View key={log._id} style={tw`flex-row items-start gap-3.5 py-3 border-b border-slate-50`}>
-                  <View style={tw`p-2 bg-emerald-50 rounded-xl mt-0.5`}>
-                    <CheckCircle size={16} color="#10b981" />
+              logs.map((log: any) => {
+                const hasProof = !!log.imageUrl;
+                const RowContent = (
+                  <View style={tw`flex-row items-start gap-3.5 py-3 border-b border-slate-50 flex-1`}>
+                    <View style={tw`p-2 bg-emerald-50 rounded-xl mt-0.5`}>
+                      <CheckCircle size={16} color="#10b981" />
+                    </View>
+                    <View style={tw`flex-grow mr-2`}>
+                      <Text style={tw`text-sm font-semibold text-slate-800`}>
+                        {log.userName} <Text style={tw`font-normal text-slate-500`}>completed</Text> {log.choreName}
+                      </Text>
+                      <Text style={tw`text-xs text-slate-400 mt-1`}>
+                        {new Date(log.completedAt).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </Text>
+                    </View>
+                    {hasProof && (
+                      <View style={tw`bg-indigo-50 px-2 py-1.5 rounded-lg border border-indigo-100 flex-row items-center gap-1 mt-0.5`}>
+                        <Text style={tw`text-[10px] font-bold text-indigo-600`}>📷 Proof</Text>
+                      </View>
+                    )}
                   </View>
-                  <View style={tw`flex-grow`}>
-                    <Text style={tw`text-sm font-semibold text-slate-800`}>
-                      {log.userName} <Text style={tw`font-normal text-slate-500`}>completed</Text> {log.choreName}
-                    </Text>
-                    <Text style={tw`text-xs text-slate-400 mt-1`}>
-                      {new Date(log.completedAt).toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </Text>
-                  </View>
-                </View>
-              ))
+                );
+
+                if (hasProof) {
+                  return (
+                    <TouchableOpacity
+                      key={log._id}
+                      onPress={() => setActivePhotoUrl(log.imageUrl)}
+                      style={tw`flex-row items-center`}
+                    >
+                      {RowContent}
+                    </TouchableOpacity>
+                  );
+                }
+
+                return <View key={log._id}>{RowContent}</View>;
+              })
             )}
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+          </View>
+        </ScrollView>
+
+        {/* Photo Proof Viewer Modal */}
+        <Modal
+          visible={!!activePhotoUrl}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setActivePhotoUrl(null)}
+        >
+          <View style={tw`flex-1 bg-black/90 justify-center items-center p-6`}>
+            <TouchableOpacity
+              style={tw`absolute top-12 right-6 p-2.5 bg-white/15 rounded-full`}
+              onPress={() => setActivePhotoUrl(null)}
+            >
+              <Text style={tw`text-white font-bold text-sm`}>✕ Close</Text>
+            </TouchableOpacity>
+            {activePhotoUrl && (
+              <Image
+                source={{ uri: activePhotoUrl }}
+                style={tw`w-full h-4/5 rounded-2xl`}
+                resizeMode="contain"
+              />
+            )}
+          </View>
+        </Modal>
+      </SafeAreaView>
+    );
+  }

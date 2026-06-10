@@ -3,13 +3,15 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import tw from 'twrnc';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
 import { Send, RefreshCw, MessageSquare } from 'lucide-react-native';
 
 export default function ChatScreen() {
-  const { user } = useAuth();
+  const { user, setLastViewedChat } = useAuth();
+  const isFocused = useIsFocused();
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -42,11 +44,26 @@ export default function ChatScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      refetchMessages().then(() => {
+      refetchMessages().then((res: any) => {
+        if (res.data && res.data.length > 0) {
+          const lastMsg = res.data[res.data.length - 1];
+          if (lastMsg) {
+            setLastViewedChat(lastMsg.createdAt);
+          }
+        }
         setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: false }), 200);
       });
-    }, [])
+    }, [setLastViewedChat])
   );
+
+  useEffect(() => {
+    if (isFocused && messages && messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg) {
+        setLastViewedChat(lastMsg.createdAt);
+      }
+    }
+  }, [messages, isFocused, setLastViewedChat]);
 
   const handleSend = () => {
     if (!inputText.trim()) return;
@@ -62,7 +79,7 @@ export default function ChatScreen() {
       <View style={tw`px-6 py-4 bg-white border-b border-slate-100 flex-row justify-between items-center`}>
         <View>
           <Text style={tw`text-xs font-semibold text-indigo-600 tracking-wider uppercase`}>Room Chat</Text>
-          <Text style={tw`text-xl font-bold text-slate-800`}>Announcements & Chat</Text>
+          <Text style={tw`text-xl font-bold text-slate-800`}>Updates & Chat</Text>
         </View>
         <TouchableOpacity onPress={() => refetchMessages()} style={tw`p-2 bg-slate-100 rounded-full`}>
           <RefreshCw size={18} color="#64748b" />
@@ -71,8 +88,8 @@ export default function ChatScreen() {
 
       <KeyboardAvoidingView
         style={tw`flex-1`}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {/* Chat Feed */}
         {loadingMessages && !messages ? (

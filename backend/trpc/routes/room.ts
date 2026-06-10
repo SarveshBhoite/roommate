@@ -269,5 +269,49 @@ export const roomRouter = createTRPCRouter({
     }
 
     return room;
-  })
+  }),
+
+  transferAdmin: protectedProcedure
+    .input(z.object({ targetUserId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { targetUserId } = input;
+      const adminId = ctx.user.userId;
+
+      const admin = await User.findById(adminId);
+      if (!admin || admin.role !== 'admin' || !admin.roomId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+      }
+
+      if (targetUserId === adminId) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'You are already the admin' });
+      }
+
+      const targetUser = await User.findById(targetUserId);
+      if (!targetUser || targetUser.roomId?.toString() !== admin.roomId.toString()) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'User is not in your room' });
+      }
+
+      const room = await Room.findById(admin.roomId);
+      if (!room) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Room not found' });
+      }
+
+      // Perform transfer
+      room.adminId = targetUserId;
+      await room.save();
+
+      admin.role = 'member';
+      await admin.save();
+
+      targetUser.role = 'admin';
+      await targetUser.save();
+
+      return { 
+        message: `Admin role transferred to ${targetUser.name}`,
+        adminUser: {
+          _id: admin._id,
+          role: admin.role,
+        }
+      };
+    })
 });

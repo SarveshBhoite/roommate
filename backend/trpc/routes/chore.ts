@@ -1,10 +1,18 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
+import { v2 as cloudinary } from 'cloudinary';
 import { createTRPCRouter, protectedProcedure } from '../create-context';
 import { Chore } from '../../models/Chore';
 import { ChoreLog } from '../../models/ChoreLog';
 import { SwapRequest } from '../../models/SwapRequest';
 import { User } from '../../models/User';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export const choreRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
@@ -57,9 +65,14 @@ export const choreRouter = createTRPCRouter({
     }),
 
   markDone: protectedProcedure
-    .input(z.object({ choreId: z.string() }))
+    .input(
+      z.object({
+        choreId: z.string(),
+        photoBase64: z.string().optional()
+      })
+    )
     .mutation(async ({ input, ctx }) => {
-      const { choreId } = input;
+      const { choreId, photoBase64 } = input;
       const userId = ctx.user.userId;
 
       const user = await User.findById(userId);
@@ -80,12 +93,29 @@ export const choreRouter = createTRPCRouter({
         });
       }
 
+      let imageUrl: string | null = null;
+      if (photoBase64) {
+        try {
+          const uploadRes = await cloudinary.uploader.upload(photoBase64, {
+            folder: process.env.CLOUDINARY_FOLDER || 'roommate_chores',
+          });
+          imageUrl = uploadRes.secure_url;
+        } catch (uploadError: any) {
+          console.error('Cloudinary upload error:', uploadError);
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to upload photo proof to Cloudinary'
+          });
+        }
+      }
+
       // Log completion
       await ChoreLog.create({
         choreId: chore._id,
         userId: user._id,
         userName: user.name,
-        choreName: chore.name
+        choreName: chore.name,
+        imageUrl
       });
 
       // Find next user in loop who is opted-in
