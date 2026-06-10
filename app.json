@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Roommate App",
-    "slug": "roommate-app",
+    "name": "Hubmate",
+    "slug": "hubmate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.jpeg",
-    "scheme": "roommateapp",
+    "scheme": "hubmate",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -17,7 +17,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.roommate.app",
+      "package": "com.hubmate.app",
       "versionCode": 1,
       "edgeToEdgeEnabled": true
     },

@@ -264,7 +264,7 @@ app.get('/pay/:contributionId/:userId', async (c) => {
                 key: "${razorpayKeyId}",
                 amount: "${amountInPaise}",
                 currency: "INR",
-                name: "Roommate Hub",
+                name: "Hubmate",
                 description: "${contribution.title}",
                 order_id: "${orderId}",
                 handler: function(response) {
@@ -347,7 +347,7 @@ app.use(
 app.get('/', (c) => {
   return c.json({ 
     status: 'ok', 
-    message: 'Roommate Hub Backend API is running',
+    message: 'Hubmate Backend API is running',
     dbConnected: mongoose.connection.readyState === 1
   });
 });

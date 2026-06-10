@@ -86,7 +86,7 @@ export default function BillsScreen() {
             currency: 'INR',
             key: order.keyId, // Razorpay test/live Key ID from backend
             amount: order.amount, // Total amount in paise
-            name: 'Roommate Hub',
+            name: 'Hubmate',
             order_id: order.orderId, // Razorpay Order ID created on backend
             prefill: {
               email: user.email,

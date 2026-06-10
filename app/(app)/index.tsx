@@ -94,7 +94,7 @@ export default function DashboardScreen() {
       {/* Header Banner */}
       <View style={tw`px-6 py-4 flex-row justify-between items-center bg-white border-b border-slate-100/80 shadow-sm shadow-slate-100/10`}>
         <View style={tw`flex-1 mr-2`}>
-          <Text style={tw`text-[10px] font-black text-[#721c3b] tracking-widest uppercase`}>Roommate Hub</Text>
+          <Text style={tw`text-[10px] font-black text-[#721c3b] tracking-widest uppercase`}>Hubmate</Text>
           <Text style={tw`text-xl font-bold text-slate-900 tracking-tight`}>{room?.name || 'Loading Room...'}</Text>
         </View>
         {room?.code && (

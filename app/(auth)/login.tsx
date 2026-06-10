@@ -61,7 +61,7 @@ export default function LoginScreen() {
             <View style={tw`w-20 h-20 bg-gradient-to-tr bg-[#721c3b] rounded-[24px] items-center justify-center shadow-lg shadow-rose-900/10 mb-5`}>
               <LogIn size={36} color="#ffffff" />
             </View>
-            <Text style={tw`text-3xl font-black text-slate-900 tracking-tight`}>Roommate Hub</Text>
+            <Text style={tw`text-3xl font-black text-slate-900 tracking-tight`}>Hubmate</Text>
             <Text style={tw`text-xs font-semibold text-slate-400 mt-1.5 uppercase tracking-wider`}>Chores • Notices • Bills</Text>
           </View>
 
