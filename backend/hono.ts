@@ -188,20 +188,20 @@ app.get('/pay/:contributionId/:userId', async (c) => {
         <div id="payment-card" class="bg-white rounded-3xl p-8 max-w-md w-full shadow-xl border border-slate-100 transition-all duration-300">
           <div class="flex items-center justify-between mb-8">
             <span class="text-xs font-bold text-indigo-600 tracking-wider uppercase bg-indigo-50 px-3 py-1 rounded-full">Secure Payment</span>
-            <span class="text-xs text-slate-400 font-semibold">\${isMock ? 'Sandbox Simulation' : 'Live Gateway'}</span>
+            <span class="text-xs text-slate-400 font-semibold">${isMock ? 'Sandbox Simulation' : 'Live Gateway'}</span>
           </div>
 
-          <h1 class="text-xl font-bold text-slate-800 mb-1">\${contribution.title}</h1>
+          <h1 class="text-xl font-bold text-slate-800 mb-1">${contribution.title}</h1>
           <p class="text-slate-400 text-xs mb-6">Payment request for split bill contribution</p>
 
           <div class="bg-slate-50 rounded-2xl p-5 mb-8 border border-slate-100">
             <div class="flex justify-between items-center mb-3">
               <span class="text-slate-500 text-sm font-medium">Roommate</span>
-              <span class="text-slate-800 text-sm font-bold">\${userName}</span>
+              <span class="text-slate-800 text-sm font-bold">${userName}</span>
             </div>
             <div class="flex justify-between items-center border-t border-slate-200/60 pt-3">
               <span class="text-slate-500 text-sm font-medium">Total Payable</span>
-              <span class="text-indigo-600 text-xl font-extrabold">₹\${userSplit.shareAmount.toFixed(2)}</span>
+              <span class="text-indigo-600 text-xl font-extrabold">₹${userSplit.shareAmount.toFixed(2)}</span>
             </div>
           </div>
 
@@ -219,7 +219,7 @@ app.get('/pay/:contributionId/:userId', async (c) => {
         </div>
 
         <script>
-          const isMock = \${isMock};
+          const isMock = ${isMock};
           
           function showSuccessScreen() {
             const card = document.getElementById('payment-card');
@@ -254,16 +254,16 @@ app.get('/pay/:contributionId/:userId', async (c) => {
 
               setTimeout(() => {
                 const mockPayId = "pay_mock_" + Math.random().toString(36).substring(2, 11);
-                submitPaymentDetails(mockPayId, "\${orderId}", null);
+                submitPaymentDetails(mockPayId, "${orderId}", null);
               }, 1200);
             } else {
               const options = {
-                key: "\${razorpayKeyId}",
-                amount: "\${amountInPaise}",
+                key: "${razorpayKeyId}",
+                amount: "${amountInPaise}",
                 currency: "INR",
                 name: "Roommate Hub",
-                description: "\${contribution.title}",
-                order_id: "\${orderId}",
+                description: "${contribution.title}",
+                order_id: "${orderId}",
                 handler: function(response) {
                   document.getElementById('status-container').innerHTML = \`
                     <div class="flex items-center justify-center py-4">
@@ -278,9 +278,9 @@ app.get('/pay/:contributionId/:userId', async (c) => {
                   );
                 },
                 prefill: {
-                  name: "\${userName}",
-                  email: "\${userEmail}",
-                  contact: "\${userPhone}"
+                  name: "${userName}",
+                  email: "${userEmail}",
+                  contact: "${userPhone}"
                 },
                 theme: {
                   color: "#4f46e5"
@@ -301,8 +301,8 @@ app.get('/pay/:contributionId/:userId', async (c) => {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                contributionId: "\${contributionId}",
-                userId: "\${userId}",
+                contributionId: "${contributionId}",
+                userId: "${userId}",
                 razorpayPaymentId: paymentId,
                 razorpayOrderId: orderId,
                 razorpaySignature: signature

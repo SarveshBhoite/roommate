@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Linking } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
@@ -48,8 +49,8 @@ export default function BillsScreen() {
 
     try {
       const url = `${getBaseUrl()}/pay/${activeBill._id}/${user?._id}`;
-      // Open secure web checkout
-      await Linking.openURL(url);
+      // Open secure web checkout in-app
+      await WebBrowser.openBrowserAsync(url);
       
       // Prompt user to refresh after payment
       Alert.alert(
