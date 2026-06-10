@@ -20,6 +20,55 @@ app.use('*', cors());
 // Health Check endpoint to support external keep-alive pingers (like UptimeRobot)
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date() }));
 
+// Play Store Required Privacy Policy page
+app.get('/privacy', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Hubmate Privacy Policy</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #faf7f2; }
+      </style>
+    </head>
+    <body class="py-10 px-4 md:px-8 max-w-3xl mx-auto text-slate-800">
+      <div class="bg-white rounded-3xl p-8 shadow-sm border border-stone-200/50">
+        <h1 class="text-3xl font-bold text-[#721c3b] mb-2">Hubmate Privacy Policy</h1>
+        <p class="text-slate-400 text-xs mb-6">Last updated: June 10, 2026</p>
+        
+        <p class="mb-4 text-sm leading-relaxed">Welcome to Hubmate. We value your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and safe-keep your information when you use our mobile application.</p>
+        
+        <h2 class="text-xl font-bold text-slate-900 mt-6 mb-3">1. Information We Collect</h2>
+        <p class="mb-3 text-sm leading-relaxed">To provide our roommate coordination features, we collect:</p>
+        <ul class="list-disc pl-5 mb-4 text-sm space-y-1.5">
+          <li><strong>Profile Data:</strong> Name, email address, and phone number when you register.</li>
+          <li><strong>Household Data:</strong> Chores logs, uploaded proof images (stored in Cloudinary), notice board announcements, and group chat messages.</li>
+          <li><strong>Transaction Data:</strong> Payment details related to bill splitting (integrated with Razorpay). We do not store credit card or bank details on our servers.</li>
+        </ul>
+        
+        <h2 class="text-xl font-bold text-slate-900 mt-6 mb-3">2. How We Use Your Information</h2>
+        <p class="mb-4 text-sm leading-relaxed">We use your information to operate and maintain your household group, verify chore completions, securely manage shared bill splits, and facilitate in-app notifications and chats between room members.</p>
+        
+        <h2 class="text-xl font-bold text-slate-900 mt-6 mb-3">3. Data Sharing & Security</h2>
+        <p class="mb-4 text-sm leading-relaxed">Your data is only shared with the roommates in your designated room group. We do not sell or share your personal data with third-party advertisers. All passwords and network requests are encrypted using industry-standard protocols.</p>
+        
+        <h2 class="text-xl font-bold text-slate-900 mt-6 mb-3">4. Contact Us</h2>
+        <p class="mb-4 text-sm leading-relaxed">If you have any questions or request deletion of your account and personal data, please contact the roommate administrator of your group or email us at support@hubmate.app.</p>
+        
+        <div class="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
+          <span>&copy; 2026 Hubmate App</span>
+          <a href="/" class="text-[#721c3b] font-bold">Home</a>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
 
