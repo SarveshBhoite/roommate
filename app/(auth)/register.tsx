@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -68,9 +68,10 @@ export default function RegisterScreen() {
         >
           {/* Header */}
           <View style={tw`items-center mb-6`}>
-            <View style={tw`w-20 h-20 bg-gradient-to-tr bg-[#721c3b] rounded-[24px] items-center justify-center shadow-lg shadow-rose-900/10 mb-4`}>
-              <UserPlus size={36} color="#ffffff" />
-            </View>
+            <Image 
+              source={require('../../assets/images/hubmate.png')} 
+              style={tw`w-20 h-20 rounded-[24px] mb-4 shadow-lg shadow-rose-900/10`} 
+            />
             <Text style={tw`text-3xl font-black text-slate-900 tracking-tight`}>Get Started</Text>
             <Text style={tw`text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider`}>Connect with your Roommates</Text>
           </View>
