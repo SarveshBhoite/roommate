@@ -18,7 +18,8 @@ import {
   Check, 
   Trash2, 
   ShieldAlert,
-  Megaphone
+  Megaphone,
+  ChevronRight
 } from 'lucide-react-native';
 
 export default function ProfileScreen() {
@@ -234,49 +235,59 @@ export default function ProfileScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View style={tw`px-6 py-4 bg-white border-b border-slate-100 flex-row justify-between items-center`}>
+      <View style={tw`px-6 py-4 bg-white border-b border-slate-100 flex-row justify-between items-center shadow-sm shadow-slate-100`}>
         <View>
-          <Text style={tw`text-xs font-semibold text-indigo-600 tracking-wider uppercase`}>Roommate Settings</Text>
-          <Text style={tw`text-xl font-bold text-slate-800`}>Profile & Controls</Text>
+          <Text style={tw`text-[10px] font-bold text-indigo-600 tracking-widest uppercase`}>Roommate Settings</Text>
+          <Text style={tw`text-xl font-extrabold text-slate-900 tracking-tight mt-0.5`}>Profile & Controls</Text>
         </View>
-        <TouchableOpacity onPress={handleLogout} style={tw`p-2 bg-rose-50 rounded-full`}>
-          <LogOut size={18} color="#ef4444" />
+        <TouchableOpacity 
+          onPress={handleLogout} 
+          style={tw`p-2.5 bg-rose-50 hover:bg-rose-100 rounded-xl`}
+          activeOpacity={0.7}
+        >
+          <LogOut size={16} color="#ef4444" />
         </TouchableOpacity>
       </View>
 
       <ScrollView style={tw`flex-1 px-5 py-4`} showsVerticalScrollIndicator={false}>
         
         {/* User Card */}
-        <View style={tw`bg-white rounded-3xl p-5 mb-5 shadow-sm border border-slate-100 flex-row items-center gap-4`}>
-          <View style={tw`w-14 h-14 bg-indigo-50 rounded-2xl items-center justify-center`}>
-            <User size={28} color="#4f46e5" />
+        <View style={tw`bg-white rounded-2xl p-5 mb-5 shadow-sm border border-slate-100 flex-row items-center gap-4.5`}>
+          <View style={tw`w-14 h-14 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100`}>
+            <User size={24} color="#4f46e5" />
           </View>
           <View style={tw`flex-1`}>
-            <Text style={tw`text-lg font-bold text-slate-800`}>{user?.name}</Text>
-            <Text style={tw`text-xs text-slate-400 mt-0.5`}>{user?.email} | {user?.phone}</Text>
-            <Text style={tw`text-[10px] font-bold text-indigo-600 uppercase mt-1`}>Role: {user?.role}</Text>
+            <Text style={tw`text-lg font-extrabold text-slate-900 tracking-tight`}>{user?.name}</Text>
+            <Text style={tw`text-xs text-slate-500 font-medium mt-0.5`}>{user?.email} • {user?.phone}</Text>
+            <View style={tw`flex-row mt-2`}>
+              <View style={tw`bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-100/55`}>
+                <Text style={tw`text-[10px] font-extrabold text-indigo-600 uppercase`}>{user?.role}</Text>
+              </View>
+            </View>
           </View>
         </View>
 
         {/* Room Info & Opt Out Toggle */}
-        <View style={tw`bg-white rounded-3xl p-5 mb-5 shadow-sm border border-slate-100`}>
-          <Text style={tw`text-sm font-bold text-slate-800 mb-4`}>Room Preferences</Text>
+        <View style={tw`bg-white rounded-2xl p-5 mb-6 shadow-sm border border-slate-100`}>
+          <Text style={tw`text-xs font-bold text-slate-400 uppercase tracking-widest mb-4`}>Room Preferences</Text>
           
-          <View style={tw`flex-row justify-between items-center py-2.5 border-b border-slate-50`}>
-            <View>
-              <Text style={tw`text-sm font-semibold text-slate-800`}>Room Code</Text>
-              <Text style={tw`text-xs text-slate-400 mt-0.5`}>Share this with roommates to join</Text>
+          <View style={tw`flex-row justify-between items-center py-3.5 border-b border-slate-100`}>
+            <View style={tw`flex-1 mr-3`}>
+              <Text style={tw`text-sm font-bold text-slate-800`}>Room Code</Text>
+              <Text style={tw`text-xs text-slate-500 font-medium mt-0.5`}>Share code to add new roommates</Text>
             </View>
-            <Text style={tw`text-base font-extrabold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg`}>
-              {room?.code || 'RM-N/A'}
-            </Text>
+            <View style={tw`bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl`}>
+              <Text style={tw`text-sm font-extrabold text-indigo-600 tracking-wide`}>
+                {room?.code || 'RM-N/A'}
+              </Text>
+            </View>
           </View>
 
-          <View style={tw`flex-row justify-between items-center py-3`}>
-            <View style={tw`flex-1 mr-3`}>
-              <Text style={tw`text-sm font-semibold text-slate-800`}>Duty Status (Opt-In)</Text>
-              <Text style={tw`text-xs text-slate-400 mt-0.5`}>
-                Disable if you are away. You will be skipped in all chore loops.
+          <View style={tw`flex-row justify-between items-center py-3.5`}>
+            <View style={tw`flex-1 mr-4`}>
+              <Text style={tw`text-sm font-bold text-slate-800`}>Duty Status (Opt-In)</Text>
+              <Text style={tw`text-xs text-slate-500 font-medium mt-0.5`}>
+                Temporary opt-out. When disabled, you will be automatically skipped in chore loops.
               </Text>
             </View>
             {loadingToggle ? (
@@ -285,8 +296,8 @@ export default function ProfileScreen() {
               <Switch
                 value={optIn}
                 onValueChange={handleToggleOpt}
-                trackColor={{ false: '#cbd5e1', true: '#a5b4fc' }}
-                thumbColor={optIn ? '#4f46e5' : '#f1f5f9'}
+                trackColor={{ false: '#e2e8f0', true: '#c7d2fe' }}
+                thumbColor={optIn ? '#4f46e5' : '#cbd5e1'}
               />
             )}
           </View>
@@ -295,26 +306,37 @@ export default function ProfileScreen() {
         {/* Admin Section (Admin Only) */}
         {user?.role === 'admin' && (
           <View style={tw`mb-10`}>
-            <View style={tw`flex-row items-center gap-2 mb-3`}>
-              <ShieldAlert size={18} color="#ef4444" />
-              <Text style={tw`text-sm font-bold text-slate-800 uppercase tracking-wider`}>Admin Panel Controls</Text>
+            <View style={tw`flex-row items-center gap-2 mb-3.5`}>
+              <View style={tw`w-7 h-7 bg-red-50 rounded-lg items-center justify-center border border-red-100`}>
+                <ShieldAlert size={14} color="#ef4444" />
+              </View>
+              <Text style={tw`text-[10px] font-bold text-slate-400 uppercase tracking-widest`}>Admin Panel Controls</Text>
             </View>
             
-            <View style={tw`bg-white rounded-3xl p-5 shadow-sm border border-slate-100 gap-3`}>
+            <View style={tw`bg-white rounded-2xl p-5 shadow-sm border border-slate-100 gap-3`}>
               {/* Approvals */}
               <TouchableOpacity
                 onPress={() => setApprovalsModal(true)}
-                style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
+                style={tw`flex-row items-center justify-between py-3.5 border-b border-slate-100`}
+                activeOpacity={0.7}
               >
-                <View style={tw`flex-row items-center gap-3.5`}>
-                  <UserPlus size={18} color="#4f46e5" />
-                  <Text style={tw`text-sm font-bold text-slate-700`}>Manage Join Requests</Text>
-                </View>
-                {pendingMembers && pendingMembers.length > 0 && (
-                  <View style={tw`bg-amber-500 rounded-full px-2 py-0.5`}>
-                    <Text style={tw`text-[10px] text-white font-extrabold`}>{pendingMembers.length}</Text>
+                <View style={tw`flex-row items-center gap-3.5 flex-1`}>
+                  <View style={tw`w-9 h-9 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100/50`}>
+                    <UserPlus size={18} color="#4f46e5" />
                   </View>
-                )}
+                  <View>
+                    <Text style={tw`text-sm font-bold text-slate-800`}>Manage Join Requests</Text>
+                    <Text style={tw`text-xs text-slate-500 font-medium`}>Approve or reject pending room members</Text>
+                  </View>
+                </View>
+                <View style={tw`flex-row items-center gap-1.5`}>
+                  {pendingMembers && pendingMembers.length > 0 && (
+                    <View style={tw`bg-amber-500 rounded-full px-2 py-0.5`}>
+                      <Text style={tw`text-[10px] text-white font-extrabold`}>{pendingMembers.length}</Text>
+                    </View>
+                  )}
+                  <ChevronRight size={16} color="#94a3b8" />
+                </View>
               </TouchableOpacity>
 
               {/* Notice Board */}
@@ -323,58 +345,102 @@ export default function ProfileScreen() {
                   setNoticeText(room?.noticeMarquee || '');
                   setEditNoticeModal(true);
                 }}
-                style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
+                style={tw`flex-row items-center justify-between py-3.5 border-b border-slate-100`}
+                activeOpacity={0.7}
               >
-                <View style={tw`flex-row items-center gap-3.5`}>
-                  <Megaphone size={18} color="#4f46e5" />
-                  <Text style={tw`text-sm font-bold text-slate-700`}>Edit Notice Board Marquee</Text>
+                <View style={tw`flex-row items-center gap-3.5 flex-1`}>
+                  <View style={tw`w-9 h-9 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100/50`}>
+                    <Megaphone size={18} color="#4f46e5" />
+                  </View>
+                  <View>
+                    <Text style={tw`text-sm font-bold text-slate-800`}>Edit Announcement Board</Text>
+                    <Text style={tw`text-xs text-slate-500 font-medium`}>Set notice marquee shown to all users</Text>
+                  </View>
                 </View>
+                <ChevronRight size={16} color="#94a3b8" />
               </TouchableOpacity>
 
               {/* Create Chore Loop */}
               <TouchableOpacity
                 onPress={() => setCreateChoreModal(true)}
-                style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
+                style={tw`flex-row items-center justify-between py-3.5 border-b border-slate-100`}
+                activeOpacity={0.7}
               >
-                <View style={tw`flex-row items-center gap-3.5`}>
-                  <PlusCircle size={18} color="#4f46e5" />
-                  <Text style={tw`text-sm font-bold text-slate-700`}>Create Work Loop</Text>
+                <View style={tw`flex-row items-center gap-3.5 flex-1`}>
+                  <View style={tw`w-9 h-9 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100/50`}>
+                    <PlusCircle size={18} color="#4f46e5" />
+                  </View>
+                  <View>
+                    <Text style={tw`text-sm font-bold text-slate-800`}>Create Work Loop</Text>
+                    <Text style={tw`text-xs text-slate-500 font-medium`}>Add chore rotation with a custom order</Text>
+                  </View>
                 </View>
+                <ChevronRight size={16} color="#94a3b8" />
               </TouchableOpacity>
 
               {/* Split New Bill */}
               <TouchableOpacity
                 onPress={() => setCreateBillModal(true)}
-                style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
+                style={tw`flex-row items-center justify-between py-3.5 border-b border-slate-100`}
+                activeOpacity={0.7}
               >
-                <View style={tw`flex-row items-center gap-3.5`}>
-                  <FileText size={18} color="#4f46e5" />
-                  <Text style={tw`text-sm font-bold text-slate-700`}>Split Shared Bill</Text>
+                <View style={tw`flex-row items-center gap-3.5 flex-1`}>
+                  <View style={tw`w-9 h-9 bg-indigo-50 rounded-xl items-center justify-center border border-indigo-100/50`}>
+                    <FileText size={18} color="#4f46e5" />
+                  </View>
+                  <View>
+                    <Text style={tw`text-sm font-bold text-slate-800`}>Split Shared Bill</Text>
+                    <Text style={tw`text-xs text-slate-500 font-medium`}>Add a new shared expense split</Text>
+                  </View>
                 </View>
+                <ChevronRight size={16} color="#94a3b8" />
               </TouchableOpacity>
 
               {/* Transfer Admin */}
               <TouchableOpacity
                 onPress={() => setTransferAdminModal(true)}
-                style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
+                style={tw`flex-row items-center justify-between py-3.5 border-b border-slate-100`}
+                activeOpacity={0.7}
               >
-                <View style={tw`flex-row items-center gap-3.5`}>
-                  <User size={18} color="#ef4444" />
-                  <Text style={tw`text-sm font-bold text-slate-700`}>Transfer Admin Role</Text>
+                <View style={tw`flex-row items-center gap-3.5 flex-1`}>
+                  <View style={tw`w-9 h-9 bg-rose-50 rounded-xl items-center justify-center border border-rose-100/50`}>
+                    <User size={18} color="#ef4444" />
+                  </View>
+                  <View>
+                    <Text style={tw`text-sm font-bold text-slate-800`}>Transfer Admin Role</Text>
+                    <Text style={tw`text-xs text-slate-500 font-medium`}>Handover admin authority to a roommate</Text>
+                  </View>
                 </View>
+                <ChevronRight size={16} color="#94a3b8" />
               </TouchableOpacity>
 
               {/* Kick Members List */}
-              <View style={tw`mt-2`}>
-                <Text style={tw`text-xs font-bold text-slate-400 mb-2 uppercase`}>Kick Roommates</Text>
-                {members?.filter((m: any) => m._id !== user?._id).map((m: any) => (
-                  <View key={m._id} style={tw`flex-row justify-between items-center py-2`}>
-                    <Text style={tw`text-sm font-semibold text-slate-700`}>{m.name}</Text>
-                    <TouchableOpacity onPress={() => handleKickUser(m._id, m.name)} style={tw`p-1.5 bg-rose-50 rounded-lg`}>
-                      <Trash2 size={14} color="#ef4444" />
-                    </TouchableOpacity>
-                  </View>
-                ))}
+              <View style={tw`mt-4`}>
+                <Text style={tw`text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-widest`}>Kick Roommates</Text>
+                {members?.filter((m: any) => m._id !== user?._id).length === 0 ? (
+                  <Text style={tw`text-slate-400 text-xs py-2 font-medium`}>No other roommates to manage.</Text>
+                ) : (
+                  members?.filter((m: any) => m._id !== user?._id).map((m: any) => (
+                    <View key={m._id} style={tw`flex-row justify-between items-center py-2.5 border-b border-slate-50 last:border-0`}>
+                      <View style={tw`flex-row items-center gap-2.5`}>
+                        <View style={tw`w-8 h-8 bg-slate-50 rounded-lg items-center justify-center border border-slate-100`}>
+                          <Text style={tw`text-xs font-bold text-slate-600`}>{m.name.charAt(0).toUpperCase()}</Text>
+                        </View>
+                        <View>
+                          <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
+                          <Text style={tw`text-[10px] text-slate-500`}>{m.phone || 'No phone'}</Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity 
+                        onPress={() => handleKickUser(m._id, m.name)} 
+                        style={tw`p-2 bg-rose-50 hover:bg-rose-100 rounded-xl`}
+                        activeOpacity={0.7}
+                      >
+                        <Trash2 size={14} color="#ef4444" />
+                      </TouchableOpacity>
+                    </View>
+                  ))
+                )}
               </View>
             </View>
           </View>
@@ -383,31 +449,47 @@ export default function ProfileScreen() {
 
       {/* ADMIN MODAL 1: Join Approvals */}
       <Modal visible={approvalsModal} animationType="slide" transparent>
-        <View style={tw`flex-1 bg-black/55 justify-end`}>
-          <View style={tw`bg-white rounded-t-3xl p-6 max-h-[75%]`}>
+        <View style={tw`flex-1 bg-slate-900/60 justify-end`}>
+          <View style={tw`bg-white rounded-t-[32px] p-6 pb-8 border-t border-slate-100 shadow-xl max-h-[75%]`}>
             <View style={tw`flex-row justify-between items-center mb-5`}>
-              <Text style={tw`text-lg font-bold text-slate-800`}>Pending Room Requests</Text>
-              <TouchableOpacity onPress={() => setApprovalsModal(false)}>
-                <X size={20} color="#64748b" />
+              <Text style={tw`text-lg font-extrabold text-slate-900 tracking-tight`}>Pending Join Requests</Text>
+              <TouchableOpacity 
+                onPress={() => setApprovalsModal(false)}
+                style={tw`p-2 bg-slate-50 border border-slate-100 rounded-xl`}
+              >
+                <X size={16} color="#64748b" />
               </TouchableOpacity>
             </View>
 
             {pendingMembers && pendingMembers.length === 0 ? (
-              <Text style={tw`text-slate-400 text-sm text-center py-10 font-medium`}>No pending requests.</Text>
+              <Text style={tw`text-slate-400 text-sm text-center py-10 font-semibold`}>No pending requests.</Text>
             ) : (
-              <ScrollView>
+              <ScrollView showsVerticalScrollIndicator={false}>
                 {pendingMembers?.map((m: any) => (
-                  <View key={m._id} style={tw`flex-row justify-between items-center py-3 border-b border-slate-100`}>
-                    <View style={tw`flex-1 mr-2`}>
-                      <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
-                      <Text style={tw`text-xs text-slate-400 mt-0.5`}>{m.phone}</Text>
+                  <View key={m._id} style={tw`flex-row justify-between items-center py-3 border-b border-slate-100 last:border-0`}>
+                    <View style={tw`flex-1 mr-3 flex-row items-center gap-2.5`}>
+                      <View style={tw`w-8 h-8 bg-indigo-50 rounded-lg items-center justify-center border border-indigo-100/50`}>
+                        <Text style={tw`text-xs font-bold text-indigo-600`}>{m.name.charAt(0).toUpperCase()}</Text>
+                      </View>
+                      <View>
+                        <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
+                        <Text style={tw`text-[10px] text-slate-500 font-semibold mt-0.5`}>{m.phone || 'No phone'}</Text>
+                      </View>
                     </View>
                     <View style={tw`flex-row gap-2`}>
-                      <TouchableOpacity onPress={() => handleReject(m._id)} style={tw`p-2 bg-slate-100 rounded-xl`}>
-                        <X size={16} color="#64748b" />
+                      <TouchableOpacity 
+                        onPress={() => handleReject(m._id)} 
+                        style={tw`p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl`}
+                        activeOpacity={0.7}
+                      >
+                        <X size={14} color="#64748b" />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleApprove(m._id)} style={tw`p-2 bg-indigo-600 rounded-xl`}>
-                        <Check size={16} color="#ffffff" />
+                      <TouchableOpacity 
+                        onPress={() => handleApprove(m._id)} 
+                        style={tw`p-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-100`}
+                        activeOpacity={0.7}
+                      >
+                        <Check size={14} color="#ffffff" />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -420,25 +502,33 @@ export default function ProfileScreen() {
 
       {/* ADMIN MODAL 2: Edit Notice board */}
       <Modal visible={editNoticeModal} animationType="slide" transparent>
-        <View style={tw`flex-1 bg-black/55 justify-end`}>
-          <View style={tw`bg-white rounded-t-3xl p-6`}>
+        <View style={tw`flex-1 bg-slate-900/60 justify-end`}>
+          <View style={tw`bg-white rounded-t-[32px] p-6 pb-8 border-t border-slate-100 shadow-xl`}>
             <View style={tw`flex-row justify-between items-center mb-5`}>
-              <Text style={tw`text-lg font-bold text-slate-800`}>Edit Notice Banner</Text>
-              <TouchableOpacity onPress={() => setEditNoticeModal(false)}>
-                <X size={20} color="#64748b" />
+              <Text style={tw`text-lg font-extrabold text-slate-900 tracking-tight`}>Edit Notice Banner</Text>
+              <TouchableOpacity 
+                onPress={() => setEditNoticeModal(false)}
+                style={tw`p-2 bg-slate-50 border border-slate-100 rounded-xl`}
+              >
+                <X size={16} color="#64748b" />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={tw`border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm mb-5 bg-slate-50`}
+              style={tw`border border-slate-200 rounded-2xl px-4 py-3.5 text-slate-800 text-sm mb-5 bg-slate-50 font-medium`}
               placeholder="e.g. Please turn off geyser after use. Next owner visit Sunday."
               placeholderTextColor="#94a3b8"
               value={noticeText}
               onChangeText={setNoticeText}
+              multiline
             />
 
-            <TouchableOpacity onPress={handleUpdateNotice} style={tw`bg-indigo-600 rounded-xl py-3.5 items-center`}>
-              <Text style={tw`text-white font-bold`}>Save Announcement</Text>
+            <TouchableOpacity 
+              onPress={handleUpdateNotice} 
+              style={tw`bg-indigo-600 rounded-2xl py-4 items-center shadow-md shadow-indigo-100`}
+              activeOpacity={0.8}
+            >
+              <Text style={tw`text-white font-bold text-sm`}>Save Announcement</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -446,17 +536,20 @@ export default function ProfileScreen() {
 
       {/* ADMIN MODAL 3: Create Chore Loop */}
       <Modal visible={createChoreModal} animationType="slide" transparent>
-        <View style={tw`flex-1 bg-black/55 justify-end`}>
-          <View style={tw`bg-white rounded-t-3xl p-6 max-h-[85%]`}>
+        <View style={tw`flex-1 bg-slate-900/60 justify-end`}>
+          <View style={tw`bg-white rounded-t-[32px] p-6 pb-8 border-t border-slate-100 shadow-xl max-h-[85%]`}>
             <View style={tw`flex-row justify-between items-center mb-5`}>
-              <Text style={tw`text-lg font-bold text-slate-800`}>New Work Loop Rotation</Text>
-              <TouchableOpacity onPress={() => setCreateChoreModal(false)}>
-                <X size={20} color="#64748b" />
+              <Text style={tw`text-lg font-extrabold text-slate-900 tracking-tight`}>New Work Loop Rotation</Text>
+              <TouchableOpacity 
+                onPress={() => setCreateChoreModal(false)}
+                style={tw`p-2 bg-slate-50 border border-slate-100 rounded-xl`}
+              >
+                <X size={16} color="#64748b" />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={tw`border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm mb-4 bg-slate-50`}
+              style={tw`border border-slate-200 rounded-2xl px-4 py-3.5 text-slate-800 text-sm mb-4 bg-slate-50 font-medium`}
               placeholder="Chore Title (e.g. Garbage Disposal)"
               placeholderTextColor="#94a3b8"
               value={choreName}
@@ -465,38 +558,66 @@ export default function ProfileScreen() {
 
             {/* Selected sequence display */}
             {selectedChoreUsers.length > 0 && (
-              <View style={tw`bg-indigo-50 p-3.5 rounded-2xl mb-4 border border-indigo-100`}>
-                <Text style={tw`text-xs font-bold text-indigo-600 mb-1`}>Selected Loop Order:</Text>
-                <Text style={tw`text-sm font-semibold text-indigo-950`}>
+              <View style={tw`bg-indigo-50/70 p-4 rounded-2xl mb-4 border border-indigo-100/50`}>
+                <Text style={tw`text-[10px] font-bold text-indigo-600 mb-2 tracking-wider uppercase`}>Loop Sequence Order:</Text>
+                <View style={tw`flex-row flex-wrap items-center gap-1.5`}>
                   {selectedChoreUsers.map((uid, idx) => {
                     const name = members?.find((m: any) => m._id === uid)?.name || '';
-                    return `${idx + 1}. ${name}`;
-                  }).join(' ➔ ')}
-                </Text>
+                    return (
+                      <View key={uid} style={tw`flex-row items-center`}>
+                        <View style={tw`bg-indigo-600 px-2.5 py-1 rounded-lg border border-indigo-500`}>
+                          <Text style={tw`text-xs font-bold text-white`}>{idx + 1}. {name}</Text>
+                        </View>
+                        {idx < selectedChoreUsers.length - 1 && (
+                          <Text style={tw`text-slate-400 text-xs mx-1`}>➔</Text>
+                        )}
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
             )}
 
-            <Text style={tw`text-xs font-bold text-slate-400 mb-2 uppercase`}>Select loop participants & order (order of clicks dictates sequence)</Text>
-            <ScrollView style={tw`max-h-50 mb-5`}>
+            <Text style={tw`text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider`}>
+              Select participants (Click in the order of rotation)
+            </Text>
+            <ScrollView style={tw`max-h-50 mb-5`} showsVerticalScrollIndicator={false}>
               {members?.map((m: any) => {
                 const isChecked = selectedChoreUsers.includes(m._id);
+                const orderIndex = selectedChoreUsers.indexOf(m._id);
                 return (
                   <TouchableOpacity
                     key={m._id}
                     onPress={() => toggleChoreUserCheckbox(m._id)}
-                    style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
+                    style={tw`flex-row items-center justify-between py-3 border-b border-slate-50 last:border-0`}
+                    activeOpacity={0.7}
                   >
-                    <Text style={tw`text-sm font-semibold text-slate-700`}>{m.name}</Text>
-                    <View style={tw`w-5 h-5 border rounded items-center justify-center ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
-                      {isChecked && <Check size={10} color="#ffffff" style={{ alignSelf: 'center' }} />}
+                    <View style={tw`flex-row items-center gap-2.5`}>
+                      <View style={tw`w-8 h-8 bg-slate-50 rounded-lg items-center justify-center border border-slate-100`}>
+                        <Text style={tw`text-xs font-bold text-slate-600`}>{m.name.charAt(0).toUpperCase()}</Text>
+                      </View>
+                      <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
+                    </View>
+                    <View style={tw`w-5.5 h-5.5 border rounded-lg items-center justify-center ${
+                      isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white'
+                    }`}>
+                      {isChecked && (
+                        <Text style={tw`text-[10px] font-extrabold text-white`}>
+                          {orderIndex + 1}
+                        </Text>
+                      )}
                     </View>
                   </TouchableOpacity>
                 );
               })}
             </ScrollView>
 
-            <TouchableOpacity onPress={handleCreateChore} style={tw`bg-indigo-600 rounded-xl py-3.5 items-center`}>
-              <Text style={tw`text-white font-bold`}>Start Chore Loop</Text>
+            <TouchableOpacity 
+              onPress={handleCreateChore} 
+              style={tw`bg-indigo-600 rounded-2xl py-4 items-center shadow-md shadow-indigo-100`}
+              activeOpacity={0.8}
+            >
+              <Text style={tw`text-white font-bold text-sm`}>Start Chore Loop</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -504,17 +625,20 @@ export default function ProfileScreen() {
 
       {/* ADMIN MODAL 4: Create Split Bill */}
       <Modal visible={createBillModal} animationType="slide" transparent>
-        <View style={tw`flex-1 bg-black/55 justify-end`}>
-          <View style={tw`bg-white rounded-t-3xl p-6 max-h-[85%]`}>
+        <View style={tw`flex-1 bg-slate-900/60 justify-end`}>
+          <View style={tw`bg-white rounded-t-[32px] p-6 pb-8 border-t border-slate-100 shadow-xl max-h-[85%]`}>
             <View style={tw`flex-row justify-between items-center mb-5`}>
-              <Text style={tw`text-lg font-bold text-slate-800`}>Create Shared Bill Split</Text>
-              <TouchableOpacity onPress={() => setCreateBillModal(false)}>
-                <X size={20} color="#64748b" />
+              <Text style={tw`text-lg font-extrabold text-slate-900 tracking-tight`}>Create Shared Expense</Text>
+              <TouchableOpacity 
+                onPress={() => setCreateBillModal(false)}
+                style={tw`p-2 bg-slate-50 border border-slate-100 rounded-xl`}
+              >
+                <X size={16} color="#64748b" />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={tw`border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm mb-3.5 bg-slate-50`}
+              style={tw`border border-slate-200 rounded-2xl px-4 py-3.5 text-slate-800 text-sm mb-3.5 bg-slate-50 font-medium`}
               placeholder="Expense Description (e.g. Wifi June)"
               placeholderTextColor="#94a3b8"
               value={billTitle}
@@ -522,35 +646,49 @@ export default function ProfileScreen() {
             />
 
             <TextInput
-              style={tw`border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm mb-4 bg-slate-50`}
-              placeholder="Total Shared Cost (INR)"
+              style={tw`border border-slate-200 rounded-2xl px-4 py-3.5 text-slate-800 text-sm mb-4 bg-slate-50 font-medium`}
+              placeholder="Total Cost (INR)"
               placeholderTextColor="#94a3b8"
               keyboardType="numeric"
               value={billAmount}
               onChangeText={setBillAmount}
             />
 
-            <Text style={tw`text-xs font-bold text-slate-400 mb-2 uppercase`}>Select Roommates in split</Text>
-            <ScrollView style={tw`max-h-50 mb-5`}>
+            <Text style={tw`text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider`}>
+              Select Roommates to include in split
+            </Text>
+            <ScrollView style={tw`max-h-50 mb-5`} showsVerticalScrollIndicator={false}>
               {members?.map((m: any) => {
                 const isChecked = selectedBillUsers.includes(m._id);
                 return (
                   <TouchableOpacity
                     key={m._id}
                     onPress={() => toggleBillUserCheckbox(m._id)}
-                    style={tw`flex-row items-center justify-between py-3 border-b border-slate-50`}
+                    style={tw`flex-row items-center justify-between py-3 border-b border-slate-50 last:border-0`}
+                    activeOpacity={0.7}
                   >
-                    <Text style={tw`text-sm font-semibold text-slate-700`}>{m.name}</Text>
-                    <View style={tw`w-5 h-5 border rounded items-center justify-center ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
-                      {isChecked && <Check size={10} color="#ffffff" style={{ alignSelf: 'center' }} />}
+                    <View style={tw`flex-row items-center gap-2.5`}>
+                      <View style={tw`w-8 h-8 bg-slate-50 rounded-lg items-center justify-center border border-slate-100`}>
+                        <Text style={tw`text-xs font-bold text-slate-600`}>{m.name.charAt(0).toUpperCase()}</Text>
+                      </View>
+                      <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
+                    </View>
+                    <View style={tw`w-5.5 h-5.5 border rounded-lg items-center justify-center ${
+                      isChecked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white'
+                    }`}>
+                      {isChecked && <Check size={12} color="#ffffff" />}
                     </View>
                   </TouchableOpacity>
                 );
               })}
             </ScrollView>
 
-            <TouchableOpacity onPress={handleCreateBill} style={tw`bg-indigo-600 rounded-xl py-3.5 items-center`}>
-              <Text style={tw`text-white font-bold`}>Split cost equally</Text>
+            <TouchableOpacity 
+              onPress={handleCreateBill} 
+              style={tw`bg-indigo-600 rounded-2xl py-4 items-center shadow-md shadow-indigo-100`}
+              activeOpacity={0.8}
+            >
+              <Text style={tw`text-white font-bold text-sm`}>Split Cost Equally</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -558,34 +696,43 @@ export default function ProfileScreen() {
 
       {/* ADMIN MODAL 5: Transfer Admin */}
       <Modal visible={transferAdminModal} animationType="slide" transparent>
-        <View style={tw`flex-1 bg-black/55 justify-end`}>
-          <View style={tw`bg-white rounded-t-3xl p-6 max-h-[75%]`}>
-            <View style={tw`flex-row justify-between items-center mb-5`}>
-              <Text style={tw`text-lg font-bold text-slate-800`}>Transfer Admin Role</Text>
-              <TouchableOpacity onPress={() => setTransferAdminModal(false)}>
-                <X size={20} color="#64748b" />
+        <View style={tw`flex-1 bg-slate-900/60 justify-end`}>
+          <View style={tw`bg-white rounded-t-[32px] p-6 pb-8 border-t border-slate-100 shadow-xl max-h-[75%]`}>
+            <View style={tw`flex-row justify-between items-center mb-4`}>
+              <Text style={tw`text-lg font-extrabold text-slate-900 tracking-tight`}>Transfer Admin Role</Text>
+              <TouchableOpacity 
+                onPress={() => setTransferAdminModal(false)}
+                style={tw`p-2 bg-slate-50 border border-slate-100 rounded-xl`}
+              >
+                <X size={16} color="#64748b" />
               </TouchableOpacity>
             </View>
 
-            <Text style={tw`text-xs text-slate-400 mb-4`}>
-              Select a roommate to transfer Admin status to. Note: You will immediately lose admin controls.
+            <Text style={tw`text-xs text-slate-500 font-medium mb-5 leading-5`}>
+              Select a roommate to transfer Admin status to. You will immediately lose admin privileges.
             </Text>
 
             {members?.filter((m: any) => m._id !== user?._id).length === 0 ? (
-              <Text style={tw`text-slate-400 text-sm text-center py-10 font-medium`}>No other roommates in this room.</Text>
+              <Text style={tw`text-slate-400 text-sm text-center py-10 font-semibold`}>No other roommates in this room.</Text>
             ) : (
-              <ScrollView>
+              <ScrollView showsVerticalScrollIndicator={false}>
                 {members?.filter((m: any) => m._id !== user?._id).map((m: any) => (
-                  <View key={m._id} style={tw`flex-row justify-between items-center py-3.5 border-b border-slate-100`}>
-                    <View style={tw`flex-1 mr-2`}>
-                      <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
-                      <Text style={tw`text-xs text-slate-400 mt-0.5`}>{m.phone}</Text>
+                  <View key={m._id} style={tw`flex-row justify-between items-center py-3.5 border-b border-slate-100 last:border-0`}>
+                    <View style={tw`flex-1 mr-3 flex-row items-center gap-2.5`}>
+                      <View style={tw`w-8 h-8 bg-slate-50 rounded-lg items-center justify-center border border-slate-100`}>
+                        <Text style={tw`text-xs font-bold text-slate-600`}>{m.name.charAt(0).toUpperCase()}</Text>
+                      </View>
+                      <View>
+                        <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
+                        <Text style={tw`text-[10px] text-slate-500 font-semibold mt-0.5`}>{m.phone || 'No phone'}</Text>
+                      </View>
                     </View>
                     <TouchableOpacity
                       onPress={() => handleTransferAdmin(m._id, m.name)}
-                      style={tw`bg-rose-600 rounded-xl px-4 py-2`}
+                      style={tw`bg-rose-600 hover:bg-rose-700 rounded-xl px-4 py-2 shadow-sm shadow-rose-100`}
+                      activeOpacity={0.8}
                     >
-                      <Text style={tw`text-white font-bold text-xs`}>Transfer</Text>
+                      <Text style={tw`text-white font-extrabold text-xs`}>Transfer</Text>
                     </TouchableOpacity>
                   </View>
                 ))}

@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Send, RefreshCw, MessageSquare } from 'lucide-react-native';
 
 export default function ChatScreen() {
-  const { user, setLastViewedChat } = useAuth();
+  const { user, lastViewedChat, setLastViewedChat } = useAuth();
   const isFocused = useIsFocused();
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
@@ -47,23 +47,23 @@ export default function ChatScreen() {
       refetchMessages().then((res: any) => {
         if (res.data && res.data.length > 0) {
           const lastMsg = res.data[res.data.length - 1];
-          if (lastMsg) {
+          if (lastMsg && lastMsg.createdAt !== lastViewedChat) {
             setLastViewedChat(lastMsg.createdAt);
           }
         }
         setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: false }), 200);
       });
-    }, [setLastViewedChat])
+    }, [setLastViewedChat, lastViewedChat])
   );
 
   useEffect(() => {
     if (isFocused && messages && messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
-      if (lastMsg) {
+      if (lastMsg && lastMsg.createdAt !== lastViewedChat) {
         setLastViewedChat(lastMsg.createdAt);
       }
     }
-  }, [messages, isFocused, setLastViewedChat]);
+  }, [messages, isFocused, lastViewedChat, setLastViewedChat]);
 
   const handleSend = () => {
     if (!inputText.trim()) return;
@@ -76,13 +76,17 @@ export default function ChatScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View style={tw`px-6 py-4 bg-white border-b border-slate-100 flex-row justify-between items-center`}>
+      <View style={tw`px-6 py-4 bg-white border-b border-slate-100 flex-row justify-between items-center shadow-sm shadow-slate-100`}>
         <View>
-          <Text style={tw`text-xs font-semibold text-indigo-600 tracking-wider uppercase`}>Room Chat</Text>
-          <Text style={tw`text-xl font-bold text-slate-800`}>Updates & Chat</Text>
+          <Text style={tw`text-[10px] font-bold text-indigo-600 tracking-widest uppercase`}>Room Chat</Text>
+          <Text style={tw`text-xl font-extrabold text-slate-900 tracking-tight mt-0.5`}>Group Discussion</Text>
         </View>
-        <TouchableOpacity onPress={() => refetchMessages()} style={tw`p-2 bg-slate-100 rounded-full`}>
-          <RefreshCw size={18} color="#64748b" />
+        <TouchableOpacity 
+          onPress={() => refetchMessages()} 
+          style={tw`p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl`}
+          activeOpacity={0.7}
+        >
+          <RefreshCw size={16} color="#4f46e5" />
         </TouchableOpacity>
       </View>
 
@@ -101,17 +105,19 @@ export default function ChatScreen() {
             ref={scrollViewRef}
             contentContainerStyle={tw`flex-grow items-center justify-center p-8`}
           >
-            <MessageSquare size={36} color="#94a3b8" />
-            <Text style={tw`text-slate-500 font-bold text-base mt-3`}>No Messages Yet</Text>
-            <Text style={tw`text-slate-400 text-xs text-center mt-1`}>
-              Say hello to your roommates! Messages will sync in real time.
+            <View style={tw`w-16 h-16 bg-indigo-50 rounded-2xl items-center justify-center mb-4`}>
+              <MessageSquare size={28} color="#4f46e5" />
+            </View>
+            <Text style={tw`text-slate-800 font-extrabold text-lg`}>No Messages Yet</Text>
+            <Text style={tw`text-slate-500 text-sm text-center mt-2 max-w-[240px] leading-5`}>
+              Start the conversation! Share updates, notes, or plan household tasks here.
             </Text>
           </ScrollView>
         ) : (
           <ScrollView
             ref={scrollViewRef}
-            style={tw`flex-1 px-4 py-3`}
-            contentContainerStyle={tw`pb-6`}
+            style={tw`flex-1 px-4 py-4`}
+            contentContainerStyle={tw`pb-8`}
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
           >
             {messages.map((msg: any) => {
@@ -120,30 +126,30 @@ export default function ChatScreen() {
               return (
                 <View 
                   key={msg._id} 
-                  style={tw`mb-4.5 max-w-[80%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}
+                  style={tw`mb-4 max-w-[80%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}
                 >
                   {/* Sender Name */}
                   {!isMe && (
-                    <Text style={tw`text-[11px] font-bold text-slate-400 mb-1 ml-1`}>
+                    <Text style={tw`text-xs font-bold text-indigo-600 mb-1 ml-1`}>
                       {msg.senderName}
                     </Text>
                   )}
 
                   {/* Message Bubble */}
                   <View 
-                    style={tw`rounded-2xl px-4 py-2.5 shadow-sm border ${
+                    style={tw`rounded-2xl px-4 py-3 shadow-sm ${
                       isMe 
-                        ? 'bg-indigo-600 border-indigo-600 rounded-tr-none' 
-                        : 'bg-white border-slate-100 rounded-tl-none'
+                        ? 'bg-indigo-600 rounded-tr-sm border border-indigo-500' 
+                        : 'bg-white border border-slate-100 rounded-tl-sm'
                     }`}
                   >
-                    <Text style={tw`text-sm leading-5 ${isMe ? 'text-white' : 'text-slate-800'}`}>
+                    <Text style={tw`text-sm leading-5 ${isMe ? 'text-white' : 'text-slate-800 font-medium'}`}>
                       {msg.message}
                     </Text>
                   </View>
 
                   {/* Timestamp */}
-                  <Text style={tw`text-[9px] text-slate-400 mt-1 mx-1.5`}>
+                  <Text style={tw`text-[10px] text-slate-400 mt-1 mx-1.5`}>
                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </Text>
                 </View>
@@ -153,10 +159,10 @@ export default function ChatScreen() {
         )}
 
         {/* Input Bar */}
-        <View style={tw`flex-row items-center gap-2.5 px-4 py-3 bg-white border-t border-slate-100`}>
+        <View style={tw`flex-row items-center gap-3 px-4 py-4.5 bg-white border-t border-slate-100`}>
           <TextInput
-            style={tw`flex-grow bg-slate-50 border border-slate-200 rounded-full px-4 py-2.5 text-slate-800 text-sm max-h-20`}
-            placeholder="Type a message..."
+            style={tw`flex-grow bg-slate-50 border border-slate-200 rounded-2xl px-4.5 py-3 text-slate-800 text-sm max-h-24 font-medium`}
+            placeholder="Write a message..."
             placeholderTextColor="#94a3b8"
             value={inputText}
             onChangeText={setInputText}
@@ -166,14 +172,15 @@ export default function ChatScreen() {
           <TouchableOpacity
             onPress={handleSend}
             disabled={sending || !inputText.trim()}
-            style={tw`w-10 h-10 bg-indigo-600 rounded-full items-center justify-center shadow-lg shadow-indigo-100 ${
-              !inputText.trim() ? 'opacity-55' : ''
+            style={tw`w-11 h-11 bg-indigo-600 rounded-2xl items-center justify-center shadow-md shadow-indigo-100 ${
+              !inputText.trim() ? 'opacity-50' : ''
             }`}
+            activeOpacity={0.8}
           >
             {sending ? (
               <ActivityIndicator color="#ffffff" size="small" />
             ) : (
-              <Send size={16} color="#ffffff" style={tw`ml-0.5`} />
+              <Send size={16} color="#ffffff" />
             )}
           </TouchableOpacity>
         </View>

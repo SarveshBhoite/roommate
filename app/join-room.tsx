@@ -107,115 +107,115 @@ export default function JoinRoomScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={tw`flex-1`}
       >
-        <ScrollView contentContainerStyle={tw`px-6 py-8 flex-grow justify-center`}>
-        {/* Header */}
-        <View style={tw`flex-row justify-between items-center mb-8`}>
-          <View>
-            <Text style={tw`text-2xl font-extrabold text-slate-800`}>Welcome, {user?.name}!</Text>
-            <Text style={tw`text-sm text-slate-400 mt-1`}>To get started, create a room or join one.</Text>
-          </View>
-          <TouchableOpacity onPress={handleLogout} style={tw`p-2 bg-slate-100 rounded-full`}>
-            <LogOut size={18} color="#64748b" />
-          </TouchableOpacity>
-        </View>
-
-        {isPending ? (
-          <View style={tw`bg-white rounded-3xl p-6 shadow-sm border border-slate-100 items-center py-10`}>
-            <View style={tw`w-14 h-14 bg-amber-50 rounded-2xl items-center justify-center mb-4`}>
-              <UserCheck size={28} color="#f59e0b" />
+        <ScrollView contentContainerStyle={tw`px-6 py-10 flex-grow justify-center`} showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View style={tw`flex-row justify-between items-center mb-8`}>
+            <View style={tw`flex-1 mr-3`}>
+              <Text style={tw`text-2xl font-black text-slate-900 tracking-tight`}>Welcome, {user?.name}!</Text>
+              <Text style={tw`text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider`}>Create or join a roommate hub</Text>
             </View>
-            <Text style={tw`text-lg font-bold text-slate-800`}>Awaiting Admin Approval</Text>
-            <Text style={tw`text-sm text-slate-400 text-center mt-2 mb-6 px-4`}>
-              Your request was sent. Once the room admin approves your profile, you will automatically enter the dashboard.
-            </Text>
-            <TouchableOpacity
-              onPress={handleRecheckStatus}
-              disabled={isFetching}
-              style={tw`bg-slate-100 rounded-xl px-5 py-3 flex-row items-center justify-center`}
-            >
-              {isFetching ? (
-                <ActivityIndicator size="small" color="#475569" style={tw`mr-2`} />
-              ) : null}
-              <Text style={tw`text-slate-700 font-semibold text-sm`}>
-                {isFetching ? 'Checking...' : 'Recheck Status'}
-              </Text>
+            <TouchableOpacity onPress={handleLogout} style={tw`p-3.5 bg-white border border-slate-100 shadow-sm rounded-2xl`}>
+              <LogOut size={18} color="#ef4444" />
             </TouchableOpacity>
           </View>
-        ) : (
-          <View style={tw`gap-6`}>
-            {/* Card 1: Join Room */}
-            <View style={tw`bg-white rounded-3xl p-6 shadow-sm border border-slate-100`}>
-              <View style={tw`flex-row items-center gap-3 mb-4`}>
-                <View style={tw`w-10 h-10 bg-indigo-50 rounded-xl items-center justify-center`}>
-                  <ArrowRight size={20} color="#4f46e5" />
-                </View>
-                <Text style={tw`text-lg font-bold text-slate-800`}>Join Existing Room</Text>
+
+          {isPending ? (
+            <View style={tw`bg-white rounded-[32px] p-8 shadow-xl shadow-slate-100/70 border border-slate-100/60 items-center py-12`}>
+              <View style={tw`w-16 h-16 bg-amber-50 border border-amber-100 rounded-3xl items-center justify-center mb-5`}>
+                <UserCheck size={30} color="#d97706" />
               </View>
-              <Text style={tw`text-xs text-slate-400 mb-4`}>
-                Enter the 6-character code shared by your room's admin (e.g. APT101).
+              <Text style={tw`text-xl font-bold text-slate-900 tracking-tight`}>Awaiting Admin Approval</Text>
+              <Text style={tw`text-sm text-slate-400 text-center mt-3 mb-8 px-2 leading-relaxed`}>
+                Your join request was sent. Once the room admin approves your profile, you will automatically enter the dashboard.
               </Text>
-              <TextInput
-                style={tw`border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-base font-bold uppercase tracking-wider mb-4 bg-slate-50`}
-                placeholder="ENTER ROOM CODE"
-                placeholderTextColor="#94a3b8"
-                maxLength={6}
-                value={roomCode}
-                onChangeText={setRoomCode}
-                autoCapitalize="characters"
-              />
               <TouchableOpacity
-                style={tw`bg-indigo-600 rounded-xl py-3.5 flex-row items-center justify-center shadow-lg shadow-indigo-100 ${loadingJoin ? 'opacity-80' : ''}`}
-                onPress={handleJoin}
-                disabled={loadingJoin}
+                onPress={handleRecheckStatus}
+                disabled={isFetching}
+                style={tw`bg-slate-900 rounded-2xl px-6 py-4 flex-row items-center justify-center w-full shadow-lg shadow-slate-900/10`}
               >
-                {loadingJoin ? (
-                  <ActivityIndicator color="#ffffff" size="small" />
-                ) : (
-                  <Text style={tw`text-white font-bold text-sm`}>Request to Join</Text>
-                )}
+                {isFetching ? (
+                  <ActivityIndicator size="small" color="#ffffff" style={tw`mr-2.5`} />
+                ) : null}
+                <Text style={tw`text-white font-bold text-sm tracking-wide uppercase`}>
+                  {isFetching ? 'Checking Status...' : 'Recheck Status'}
+                </Text>
               </TouchableOpacity>
             </View>
-
-            {/* Divider */}
-            <View style={tw`flex-row items-center my-2`}>
-              <View style={tw`flex-1 h-px bg-slate-200`} />
-              <Text style={tw`mx-4 text-xs font-bold text-slate-400 uppercase`}>Or</Text>
-              <View style={tw`flex-1 h-px bg-slate-200`} />
-            </View>
-
-            {/* Card 2: Create Room */}
-            <View style={tw`bg-white rounded-3xl p-6 shadow-sm border border-slate-100`}>
-              <View style={tw`flex-row items-center gap-3 mb-4`}>
-                <View style={tw`w-10 h-10 bg-emerald-50 rounded-xl items-center justify-center`}>
-                  <Home size={20} color="#10b981" />
+          ) : (
+            <View style={tw`gap-6`}>
+              {/* Card 1: Join Room */}
+              <View style={tw`bg-white rounded-[32px] p-7 shadow-xl shadow-slate-100/70 border border-slate-100/60`}>
+                <View style={tw`flex-row items-center gap-3.5 mb-4`}>
+                  <View style={tw`w-11 h-11 bg-indigo-50 border border-indigo-100 rounded-2xl items-center justify-center`}>
+                    <ArrowRight size={20} color="#4f46e5" />
+                  </View>
+                  <Text style={tw`text-lg font-bold text-slate-900 tracking-tight`}>Join Existing Room</Text>
                 </View>
-                <Text style={tw`text-lg font-bold text-slate-800`}>Create New Room</Text>
+                <Text style={tw`text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-wider`}>
+                  Enter the 6-character code shared by your room admin.
+                </Text>
+                <TextInput
+                  style={tw`bg-slate-50 border border-slate-200/50 rounded-2xl px-4 py-3.5 text-slate-900 text-base font-black uppercase tracking-widest mb-4 text-center`}
+                  placeholder="ENTER ROOM CODE"
+                  placeholderTextColor="#94a3b8"
+                  maxLength={6}
+                  value={roomCode}
+                  onChangeText={setRoomCode}
+                  autoCapitalize="characters"
+                />
+                <TouchableOpacity
+                  style={tw`bg-indigo-600 rounded-2xl py-4 flex-row items-center justify-center shadow-lg shadow-indigo-200/60 ${loadingJoin ? 'opacity-85' : ''}`}
+                  onPress={handleJoin}
+                  disabled={loadingJoin}
+                >
+                  {loadingJoin ? (
+                    <ActivityIndicator color="#ffffff" size="small" />
+                  ) : (
+                    <Text style={tw`text-white font-bold text-sm tracking-wide uppercase`}>Request to Join</Text>
+                  )}
+                </TouchableOpacity>
               </View>
-              <Text style={tw`text-xs text-slate-400 mb-4`}>
-                Start a new room group. You will become the Admin and can approve other roommates.
-              </Text>
-              <TextInput
-                style={tw`border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm mb-4 bg-slate-50`}
-                placeholder="e.g. Apartment 4B"
-                placeholderTextColor="#94a3b8"
-                value={roomName}
-                onChangeText={setRoomName}
-              />
-              <TouchableOpacity
-                style={tw`bg-emerald-600 rounded-xl py-3.5 flex-row items-center justify-center shadow-lg shadow-emerald-100 ${loadingCreate ? 'opacity-80' : ''}`}
-                onPress={handleCreate}
-                disabled={loadingCreate}
-              >
-                {loadingCreate ? (
-                  <ActivityIndicator color="#ffffff" size="small" />
-                ) : (
-                  <Text style={tw`text-white font-bold text-sm`}>Create Room</Text>
-                )}
-              </TouchableOpacity>
+
+              {/* Divider */}
+              <View style={tw`flex-row items-center my-1`}>
+                <View style={tw`flex-1 h-px bg-slate-200/60`} />
+                <Text style={tw`mx-4 text-[10px] font-black text-slate-400 uppercase tracking-widest`}>Or</Text>
+                <View style={tw`flex-1 h-px bg-slate-200/60`} />
+              </View>
+
+              {/* Card 2: Create Room */}
+              <View style={tw`bg-white rounded-[32px] p-7 shadow-xl shadow-slate-100/70 border border-slate-100/60`}>
+                <View style={tw`flex-row items-center gap-3.5 mb-4`}>
+                  <View style={tw`w-11 h-11 bg-emerald-50 border border-emerald-100 rounded-2xl items-center justify-center`}>
+                    <Home size={20} color="#10b981" />
+                  </View>
+                  <Text style={tw`text-lg font-bold text-slate-900 tracking-tight`}>Create New Room</Text>
+                </View>
+                <Text style={tw`text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-wider`}>
+                  Start a new room group and invite your roommates.
+                </Text>
+                <TextInput
+                  style={tw`bg-slate-50 border border-slate-200/50 rounded-2xl px-4 py-3.5 text-slate-900 text-sm mb-4`}
+                  placeholder="e.g. Apartment 4B"
+                  placeholderTextColor="#94a3b8"
+                  value={roomName}
+                  onChangeText={setRoomName}
+                />
+                <TouchableOpacity
+                  style={tw`bg-emerald-600 rounded-2xl py-4 flex-row items-center justify-center shadow-lg shadow-emerald-200/60 ${loadingCreate ? 'opacity-85' : ''}`}
+                  onPress={handleCreate}
+                  disabled={loadingCreate}
+                >
+                  {loadingCreate ? (
+                    <ActivityIndicator color="#ffffff" size="small" />
+                  ) : (
+                    <Text style={tw`text-white font-bold text-sm tracking-wide uppercase`}>Create Room</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        )}
-      </ScrollView>
+          )}
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
