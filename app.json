@@ -7,7 +7,7 @@
     "icon": "./assets/images/hubmate.png",
     "scheme": "hubmate",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/images/hubmate.png",
       "resizeMode": "contain",
@@ -31,7 +31,8 @@
     "plugins": [
       "expo-router",
       "@react-native-community/datetimepicker",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
