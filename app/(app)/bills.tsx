@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import Constants, { AppOwnership } from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
@@ -52,7 +52,7 @@ export default function BillsScreen() {
       // Create Razorpay order on the backend
       const order = await payOrderMutation.mutateAsync({ contributionId: activeBill._id });
 
-      const isExpoGo = Constants.appOwnership !== ('standalone' as any);
+      const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
       if (isExpoGo) {
         // Fallback in Expo Go to the secure Hono-hosted web portal checkout
