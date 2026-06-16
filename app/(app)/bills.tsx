@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -54,7 +54,112 @@ export default function BillsScreen() {
 
       const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
-      if (isExpoGo) {
+      if (Platform.OS === 'web') {
+        // Load Razorpay Checkout dynamically on the web
+        const loadRazorpay = () => {
+          return new Promise<boolean>((resolve) => {
+            if (typeof window !== 'undefined' && (window as any).Razorpay) {
+              resolve(true);
+              return;
+            }
+            if (typeof document !== 'undefined') {
+              const script = document.createElement('script');
+              script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+              script.onload = () => resolve(true);
+              script.onerror = () => resolve(false);
+              document.body.appendChild(script);
+            } else {
+              resolve(false);
+            }
+          });
+        };
+
+        const loaded = await loadRazorpay();
+        if (!loaded) {
+          Alert.alert('Payment Error', 'Failed to load Razorpay SDK. Please check your network connection.');
+          setLoadingPayment(false);
+          return;
+        }
+
+        // Check if we are in sandbox/mock mode (no keys on backend)
+        const isMock = order.orderId.startsWith('order_mock_');
+        if (isMock) {
+          // Simulate sandbox payment on web
+          Alert.alert(
+            'Sandbox Payment',
+            'Simulating payment checkout...',
+            [
+              {
+                text: 'Complete Payment',
+                onPress: async () => {
+                  setLoadingPayment(true);
+                  const mockPayId = "pay_mock_" + Math.random().toString(36).substring(2, 11);
+                  try {
+                    await verifyPaymentMutation.mutateAsync({
+                      contributionId: activeBill._id,
+                      razorpayOrderId: order.orderId,
+                      razorpayPaymentId: mockPayId,
+                      razorpaySignature: '' // Signatures are bypassed for mock orders
+                    });
+                    setPaymentModalVisible(false);
+                  } catch (err) {
+                    // Handled by mutation onError
+                  } finally {
+                    setLoadingPayment(false);
+                  }
+                }
+              },
+              {
+                text: 'Cancel',
+                onPress: () => setLoadingPayment(false),
+                style: 'cancel'
+              }
+            ]
+          );
+          return;
+        }
+
+        const options = {
+          key: order.keyId,
+          amount: order.amount,
+          currency: 'INR',
+          name: 'Hubmate',
+          description: activeBill.title,
+          order_id: order.orderId,
+          handler: async function (response: any) {
+            setLoadingPayment(true);
+            try {
+              await verifyPaymentMutation.mutateAsync({
+                contributionId: activeBill._id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature
+              });
+              setPaymentModalVisible(false);
+            } catch (err) {
+              // Error is already alerted by verifyPaymentMutation's onError handler
+            } finally {
+              setLoadingPayment(false);
+            }
+          },
+          prefill: {
+            name: user.name,
+            email: user.email,
+            contact: user.phone || ''
+          },
+          theme: {
+            color: '#721c3b'
+          },
+          modal: {
+            ondismiss: function () {
+              setLoadingPayment(false);
+            }
+          }
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      } else if (isExpoGo) {
         // Fallback in Expo Go to the secure Hono-hosted web portal checkout
         const url = `${getBaseUrl()}/pay/${activeBill._id}/${user?._id}`;
         await WebBrowser.openBrowserAsync(url);
