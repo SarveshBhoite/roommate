@@ -1,5 +1,5 @@
 import { Tabs, useRouter } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, Platform } from 'react-native';
 import { useAuth } from '@/contexts/auth-context';
 import { useEffect } from 'react';
 import { Home, CheckSquare, DollarSign, MessageSquare, User } from 'lucide-react-native';
@@ -68,7 +68,7 @@ export default function AppLayout() {
   if (isLoading) {
     return (
       <View style={tw`flex-1 items-center justify-center bg-slate-50`}>
-        <ActivityIndicator size="large" color="#4f46e5" />
+        <ActivityIndicator size="large" color="#721c3b" />
       </View>
     );
   }
@@ -83,7 +83,12 @@ export default function AppLayout() {
         headerShown: false,
         tabBarActiveTintColor: '#721c3b',
         tabBarInactiveTintColor: '#94a3b8',
-        tabBarStyle: tw`bg-white border-t border-slate-100 py-1.5 h-14`,
+        tabBarStyle: [
+          tw`bg-white border-t border-slate-100`,
+          Platform.OS === 'web'
+            ? { height: 72, paddingBottom: 12, paddingTop: 6 }
+            : tw`py-1.5 h-14`
+        ],
         tabBarLabelStyle: tw`text-xs font-semibold pb-1`,
         tabBarHideOnKeyboard: true,
       }}

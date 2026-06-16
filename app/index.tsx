@@ -22,7 +22,7 @@ export default function RootIndex() {
 
   return (
     <View style={tw`flex-1 items-center justify-center bg-slate-50`}>
-      <ActivityIndicator size="large" color="#4f46e5" />
+      <ActivityIndicator size="large" color="#721c3b" />
     </View>
   );
 }
