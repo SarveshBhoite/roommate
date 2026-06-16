@@ -3,6 +3,7 @@ import { TRPCError } from '@trpc/server';
 import { createTRPCRouter, protectedProcedure } from '../create-context';
 import { Room } from '../../models/Room';
 import { User } from '../../models/User';
+import { Chore } from '../../models/Chore';
 
 // Helper to generate a unique 6-digit room code
 function generateRoomCode(): string {
@@ -229,6 +230,43 @@ export const roomRouter = createTRPCRouter({
       targetUser.roomId = null as any;
       targetUser.role = 'member';
       await targetUser.save();
+
+      // Clean up chores in this room: remove target user from chore rotation loops
+      const chores = await Chore.find({ roomId: admin.roomId });
+      for (const chore of chores) {
+        const targetIdStr = targetUserId.toString();
+        
+        // Find positions of target user
+        const originalIndex = chore.originalRotationOrder.findIndex(
+          (id: any) => id.toString() === targetIdStr
+        );
+        const activeIndex = chore.rotationOrder.findIndex(
+          (id: any) => id.toString() === targetIdStr
+        );
+
+        if (originalIndex !== -1) {
+          chore.originalRotationOrder.splice(originalIndex, 1);
+        }
+
+        if (activeIndex !== -1) {
+          chore.rotationOrder.splice(activeIndex, 1);
+          
+          // Adjust currentIndex
+          if (chore.rotationOrder.length === 0) {
+            chore.currentIndex = 0;
+          } else if (chore.currentIndex === activeIndex) {
+            // Active turn is the kicked user. Shift turn to next user (or wrap to 0 if they were last)
+            if (chore.currentIndex >= chore.rotationOrder.length) {
+              chore.currentIndex = 0;
+            }
+          } else if (chore.currentIndex > activeIndex) {
+            // Active turn is after kicked user, so active user index shifted down by 1
+            chore.currentIndex -= 1;
+          }
+        }
+        
+        await chore.save();
+      }
 
       return { message: `${targetUser.name} kicked from the room` };
     }),

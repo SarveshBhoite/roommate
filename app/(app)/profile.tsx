@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Switch } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Switch, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -36,6 +36,13 @@ export default function ProfileScreen() {
   const [createBillModal, setCreateBillModal] = useState(false);
   const [editNoticeModal, setEditNoticeModal] = useState(false);
   const [transferAdminModal, setTransferAdminModal] = useState(false);
+
+  // Web-only Confirmation Modal state
+  const [webConfirmVisible, setWebConfirmVisible] = useState(false);
+  const [webConfirmTitle, setWebConfirmTitle] = useState('');
+  const [webConfirmMessage, setWebConfirmMessage] = useState('');
+  const [webConfirmAction, setWebConfirmAction] = useState<(() => void) | null>(null);
+  const [webConfirmDestructive, setWebConfirmDestructive] = useState(false);
 
   // Form states for Admin Panels
   const [noticeText, setNoticeText] = useState('');
@@ -192,7 +199,24 @@ export default function ProfileScreen() {
     });
   };
 
+  const showWebConfirm = (title: string, message: string, action: () => void, isDestructive = false) => {
+    setWebConfirmTitle(title);
+    setWebConfirmMessage(message);
+    setWebConfirmAction(() => action);
+    setWebConfirmDestructive(isDestructive);
+    setWebConfirmVisible(true);
+  };
+
   const handleKickUser = (targetUserId: string, name: string) => {
+    if (Platform.OS === 'web') {
+      showWebConfirm(
+        'Remove Roommate',
+        `Are you sure you want to remove ${name} from this room?`,
+        () => kickMutation.mutate({ targetUserId }),
+        true
+      );
+      return;
+    }
     Alert.alert(
       'Remove Roommate',
       `Are you sure you want to remove ${name} from this room?`,
@@ -204,6 +228,15 @@ export default function ProfileScreen() {
   };
 
   const handleTransferAdmin = (targetUserId: string, name: string) => {
+    if (Platform.OS === 'web') {
+      showWebConfirm(
+        'Transfer Admin Rights',
+        `Are you sure you want to transfer Admin rights to ${name}? This action CANNOT be undone, and you will lose admin privileges.`,
+        () => transferAdminMutation.mutate({ targetUserId }),
+        true
+      );
+      return;
+    }
     Alert.alert(
       'Transfer Admin Rights',
       `Are you sure you want to transfer Admin rights to ${name}? This action CANNOT be undone, and you will lose admin privileges.`,
@@ -738,9 +771,56 @@ export default function ProfileScreen() {
                 ))}
               </ScrollView>
             )}
-          </View>
         </View>
-      </Modal>
+      </View>
+    </Modal>
+
+      {/* Web-only Custom Confirmation Modal */}
+      {Platform.OS === 'web' && (
+        <Modal visible={webConfirmVisible} animationType="fade" transparent>
+          <View style={tw`flex-1 bg-slate-900/60 justify-center items-center p-6`}>
+            <View style={tw`bg-white rounded-3xl p-6 shadow-2xl max-w-sm w-full border border-slate-100`}>
+              <View style={tw`flex-row items-center gap-3.5 mb-4`}>
+                <View style={tw`w-11 h-11 bg-rose-50 border border-rose-100 rounded-2xl items-center justify-center`}>
+                  <ShieldAlert size={20} color="#ef4444" />
+                </View>
+                <Text style={tw`text-lg font-extrabold text-slate-900 tracking-tight`}>
+                  {webConfirmTitle}
+                </Text>
+              </View>
+
+              <Text style={tw`text-xs text-slate-500 font-medium leading-relaxed mb-6`}>
+                {webConfirmMessage}
+              </Text>
+
+              <View style={tw`flex-row gap-3`}>
+                <TouchableOpacity
+                  onPress={() => setWebConfirmVisible(false)}
+                  style={tw`flex-1 border border-slate-200 rounded-2xl py-3.5 items-center justify-center bg-slate-50`}
+                >
+                  <Text style={tw`text-slate-500 font-bold text-xs uppercase tracking-wider`}>
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    if (webConfirmAction) webConfirmAction();
+                    setWebConfirmVisible(false);
+                  }}
+                  style={tw`flex-1 rounded-2xl py-3.5 items-center justify-center ${
+                    webConfirmDestructive ? 'bg-[#721c3b] shadow-lg shadow-rose-900/20' : 'bg-slate-900'
+                  }`}
+                >
+                  <Text style={tw`text-white font-bold text-xs uppercase tracking-wider`}>
+                    Confirm
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
