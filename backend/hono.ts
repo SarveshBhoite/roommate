@@ -68,6 +68,41 @@ app.get('/privacy', (c) => {
   `);
 });
 
+// Database Cleanup Endpoint (For Demo Reset purposes)
+app.get('/clean-db', async (c) => {
+  const secret = c.req.query('secret');
+  const configuredSecret = process.env.DB_CLEAN_SECRET || 'hubmate_clean_demo_secret_2026';
+
+  if (!secret || secret !== configuredSecret) {
+    return c.json({ 
+      success: false, 
+      message: 'Unauthorized. Please provide the correct secret key (?secret=...)' 
+    }, 401);
+  }
+
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return c.json({ success: false, message: 'Database not connected' }, 500);
+    }
+
+    const collections = mongoose.connection.collections;
+    const deletedCollections: string[] = [];
+
+    for (const key in collections) {
+      await collections[key].deleteMany({});
+      deletedCollections.push(key);
+    }
+
+    return c.json({
+      success: true,
+      message: 'Database cleaned successfully! Ready for a fresh start.',
+      cleanedCollections: deletedCollections
+    });
+  } catch (err: any) {
+    console.error('Error cleaning database:', err);
+    return c.json({ success: false, message: err.message }, 500);
+  }
+});
 
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
