@@ -205,5 +205,31 @@ export const billRouter = createTRPCRouter({
       await contribution.save();
 
       return { success: true, status: 'paid' };
+    }),
+
+  markAsPaid: protectedProcedure
+    .input(z.object({ contributionId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { contributionId } = input;
+      const userId = ctx.user.userId;
+
+      const contribution = await Contribution.findById(contributionId);
+      if (!contribution) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Contribution not found' });
+      }
+
+      const userSplit = contribution.splits.find(
+        (split: any) => split.userId.toString() === userId
+      );
+
+      if (!userSplit) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'You are not included in this split' });
+      }
+
+      userSplit.status = 'paid';
+      userSplit.razorpayPaymentId = `upi_${crypto.randomBytes(8).toString('hex')}`;
+      await contribution.save();
+
+      return { success: true, status: 'paid' };
     })
 });

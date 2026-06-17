@@ -336,6 +336,7 @@ export const roomRouter = createTRPCRouter({
 
       // Perform transfer
       room.adminId = targetUserId;
+      room.upiId = ""; // Reset UPI ID so the new admin configures their own
       await room.save();
 
       admin.role = 'member';
@@ -351,5 +352,27 @@ export const roomRouter = createTRPCRouter({
           role: admin.role,
         }
       };
+    }),
+
+  updateUpiId: protectedProcedure
+    .input(z.object({ upiId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { upiId } = input;
+      const adminId = ctx.user.userId;
+
+      const admin = await User.findById(adminId);
+      if (!admin || admin.role !== 'admin' || !admin.roomId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+      }
+
+      const room = await Room.findById(admin.roomId);
+      if (!room) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Room not found' });
+      }
+
+      room.upiId = upiId.trim();
+      await room.save();
+
+      return { upiId: room.upiId };
     })
 });

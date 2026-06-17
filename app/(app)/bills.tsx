@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Platform, Linking } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,8 +21,11 @@ export default function BillsScreen() {
     retry: false
   });
 
-  const payOrderMutation = trpc.bill.createRazorpayOrder.useMutation();
-  const verifyPaymentMutation = trpc.bill.verifyPayment.useMutation({
+  const { data: room } = trpc.room.getRoomDetails.useQuery(undefined, {
+    retry: false
+  });
+
+  const markAsPaidMutation = trpc.bill.markAsPaid.useMutation({
     onSuccess: () => {
       setPaymentModalVisible(false);
       refetchBills();
@@ -46,180 +49,48 @@ export default function BillsScreen() {
 
   const executeRealPayment = async () => {
     if (!activeBill || !user) return;
+
+    const share = getUserShare(activeBill);
+    if (!share) return;
+
+    const adminUpiId = room?.upiId || '';
+    if (!adminUpiId) {
+      Alert.alert(
+        'UPI ID Missing',
+        'Your Room Admin has not configured the Room UPI address in settings. Please contact the Admin to configure their UPI ID.'
+      );
+      return;
+    }
+
     setLoadingPayment(true);
 
+    const billTitle = activeBill.title || 'Contribution';
+    const upiUrl = `upi://pay?pa=${adminUpiId}&pn=Room%20Admin&am=${share}&tn=Hubmate%20-%20${encodeURIComponent(billTitle)}&cu=INR`;
+
     try {
-      // Create Razorpay order on the backend
-      const order = await payOrderMutation.mutateAsync({ contributionId: activeBill._id });
-
-      const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-
       if (Platform.OS === 'web') {
-        // Load Razorpay Checkout dynamically on the web
-        const loadRazorpay = () => {
-          return new Promise<boolean>((resolve) => {
-            if (typeof window !== 'undefined' && (window as any).Razorpay) {
-              resolve(true);
-              return;
-            }
-            if (typeof document !== 'undefined') {
-              const script = document.createElement('script');
-              script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-              script.onload = () => resolve(true);
-              script.onerror = () => resolve(false);
-              document.body.appendChild(script);
-            } else {
-              resolve(false);
-            }
-          });
-        };
-
-        const loaded = await loadRazorpay();
-        if (!loaded) {
-          Alert.alert('Payment Error', 'Failed to load Razorpay SDK. Please check your network connection.');
-          setLoadingPayment(false);
-          return;
-        }
-
-        // Check if we are in sandbox/mock mode (no keys on backend)
-        const isMock = order.orderId.startsWith('order_mock_');
-        if (isMock) {
-          // Simulate sandbox payment on web
-          Alert.alert(
-            'Sandbox Payment',
-            'Simulating payment checkout...',
-            [
-              {
-                text: 'Complete Payment',
-                onPress: async () => {
-                  setLoadingPayment(true);
-                  const mockPayId = "pay_mock_" + Math.random().toString(36).substring(2, 11);
-                  try {
-                    await verifyPaymentMutation.mutateAsync({
-                      contributionId: activeBill._id,
-                      razorpayOrderId: order.orderId,
-                      razorpayPaymentId: mockPayId,
-                      razorpaySignature: '' // Signatures are bypassed for mock orders
-                    });
-                    setPaymentModalVisible(false);
-                  } catch (err) {
-                    // Handled by mutation onError
-                  } finally {
-                    setLoadingPayment(false);
-                  }
-                }
-              },
-              {
-                text: 'Cancel',
-                onPress: () => setLoadingPayment(false),
-                style: 'cancel'
-              }
-            ]
-          );
-          return;
-        }
-
-        const options = {
-          key: order.keyId,
-          amount: order.amount,
-          currency: 'INR',
-          name: 'Hubmate',
-          description: activeBill.title,
-          order_id: order.orderId,
-          handler: async function (response: any) {
-            setLoadingPayment(true);
-            try {
-              await verifyPaymentMutation.mutateAsync({
-                contributionId: activeBill._id,
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature
-              });
-              setPaymentModalVisible(false);
-            } catch (err) {
-              // Error is already alerted by verifyPaymentMutation's onError handler
-            } finally {
-              setLoadingPayment(false);
-            }
-          },
-          prefill: {
-            name: user.name,
-            email: user.email,
-            contact: user.phone || ''
-          },
-          theme: {
-            color: '#721c3b'
-          },
-          modal: {
-            ondismiss: function () {
-              setLoadingPayment(false);
-            }
-          }
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      } else if (isExpoGo) {
-        // Fallback in Expo Go to the secure Hono-hosted web portal checkout
-        const url = `${getBaseUrl()}/pay/${activeBill._id}/${user?._id}`;
-        await WebBrowser.openBrowserAsync(url);
-        
-        Alert.alert(
-          'Payment Gateway Opened',
-          'We have launched the secure Razorpay payment page in your browser. After completing the payment, please press "OK" to check payment status.',
-          [
-            {
-              text: 'OK',
-              onPress: async () => {
-                setLoadingPayment(true);
-                setTimeout(async () => {
-                  await refetchBills();
-                  setLoadingPayment(false);
-                  setPaymentModalVisible(false);
-                }, 1000);
-              }
-            }
-          ]
-        );
+        window.location.href = upiUrl;
       } else {
-        // Run native Razorpay SDK directly inside the built APK
-        try {
-          const RazorpayCheckout = require('react-native-razorpay').default;
-          const options = {
-            description: activeBill.title,
-            image: 'https://i.imgur.com/3g7A6cz.png',
-            currency: 'INR',
-            key: order.keyId, // Razorpay test/live Key ID from backend
-            amount: order.amount, // Total amount in paise
-            name: 'Hubmate',
-            order_id: order.orderId, // Razorpay Order ID created on backend
-            prefill: {
-              email: user.email,
-              contact: user.phone || '',
-              name: user.name
-            },
-            theme: { color: '#721c3b' }
-          };
-
-          RazorpayCheckout.open(options).then(async (data: any) => {
-            // Verify payment signature securely on the server
-            await verifyPaymentMutation.mutateAsync({
-              contributionId: activeBill._id,
-              razorpayOrderId: data.razorpay_order_id,
-              razorpayPaymentId: data.razorpay_payment_id,
-              razorpaySignature: data.razorpay_signature
-            });
-          }).catch((error: any) => {
-            Alert.alert('Payment Failed', error.description || 'Transaction cancelled');
-            setLoadingPayment(false);
-          });
-        } catch (nativeError: any) {
-          Alert.alert('Razorpay Load Error', 'Failed to load native Razorpay module: ' + nativeError.message);
-          setLoadingPayment(false);
+        const supported = await Linking.canOpenURL(upiUrl);
+        if (supported) {
+          await Linking.openURL(upiUrl);
+        } else {
+          Alert.alert(
+            'UPI Apps Not Found',
+            `Could not launch UPI app automatically. Please pay ₹${share} directly to UPI ID: ${adminUpiId}`
+          );
         }
       }
-    } catch (error: any) {
-      Alert.alert('Payment Error', formatError(error));
+    } catch (error) {
+      console.warn("UPI deep link error:", error);
+    }
+
+    // Immediately mark as paid (no admin verification signatures required, per user spec)
+    try {
+      await markAsPaidMutation.mutateAsync({ contributionId: activeBill._id });
+    } catch (err) {
+      // Error handled by mutation
+    } finally {
       setLoadingPayment(false);
     }
   };
@@ -351,7 +222,7 @@ export default function BillsScreen() {
         )}
       </ScrollView>
 
-      {/* Razorpay Payment Modal Simulator */}
+      {/* P2P UPI Payment Modal */}
       <Modal
         visible={paymentModalVisible}
         animationType="slide"
@@ -364,7 +235,7 @@ export default function BillsScreen() {
             {/* Header */}
             <View style={tw`flex-row justify-between items-center mb-6`}>
               <View>
-                <Text style={tw`text-[10px] font-black text-slate-400 uppercase tracking-wider`}>Razorpay Secure Payment</Text>
+                <Text style={tw`text-[10px] font-black text-slate-400 uppercase tracking-wider`}>Direct UPI Transfer (0% Fee)</Text>
                 <Text style={tw`text-lg font-bold text-slate-900 tracking-tight mt-0.5`}>{activeBill?.title}</Text>
               </View>
               <TouchableOpacity onPress={() => setPaymentModalVisible(false)} style={tw`p-1.5 bg-slate-50 border border-slate-100 rounded-full shadow-sm`}>
@@ -379,7 +250,7 @@ export default function BillsScreen() {
               
               <View style={tw`flex-row items-center gap-1.5 mt-3.5 bg-white border border-slate-100 px-3 py-1.5 rounded-full shadow-sm`}>
                 <ShieldCheck size={12} color="#721c3b" />
-                <Text style={tw`text-[9px] text-[#721c3b] font-bold uppercase tracking-wider`}>Safe & Encrypted Checkout</Text>
+                <Text style={tw`text-[9px] text-[#721c3b] font-bold uppercase tracking-wider`}>Direct Bank-to-Bank Transfer</Text>
               </View>
             </View>
 
@@ -392,15 +263,15 @@ export default function BillsScreen() {
               {loadingPayment ? (
                 <>
                   <ActivityIndicator color="#ffffff" size="small" style={tw`mr-2`} />
-                  <Text style={tw`text-white font-bold text-xs uppercase tracking-wider`}>Redirecting to Gateway...</Text>
+                  <Text style={tw`text-white font-bold text-xs uppercase tracking-wider`}>Opening UPI App...</Text>
                 </>
               ) : (
-                <Text style={tw`text-white font-bold text-xs uppercase tracking-wider`}>Pay Securely via Razorpay</Text>
+                <Text style={tw`text-white font-bold text-xs uppercase tracking-wider`}>Launch UPI App (GPay/PhonePe)</Text>
               )}
             </TouchableOpacity>
 
             <Text style={tw`text-[10px] text-slate-400 text-center py-2 font-semibold`}>
-              Secure payment gateway will open in your mobile browser.
+              This will automatically launch your preferred UPI app with amount and UPI ID pre-filled.
             </Text>
           </View>
         </View>

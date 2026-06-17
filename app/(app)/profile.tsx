@@ -35,6 +35,7 @@ export default function ProfileScreen() {
   const [createChoreModal, setCreateChoreModal] = useState(false);
   const [createBillModal, setCreateBillModal] = useState(false);
   const [editNoticeModal, setEditNoticeModal] = useState(false);
+  const [editUpiModal, setEditUpiModal] = useState(false);
   const [transferAdminModal, setTransferAdminModal] = useState(false);
 
   // Web-only Confirmation Modal state
@@ -46,6 +47,7 @@ export default function ProfileScreen() {
 
   // Form states for Admin Panels
   const [noticeText, setNoticeText] = useState('');
+  const [upiText, setUpiText] = useState('');
   const [choreName, setChoreName] = useState('');
   const [selectedChoreUsers, setSelectedChoreUsers] = useState<string[]>([]);
   const [billTitle, setBillTitle] = useState('');
@@ -93,6 +95,17 @@ export default function ProfileScreen() {
       setEditNoticeModal(false);
       refetchRoom();
       Alert.alert('Notice Updated', 'Marquee announcement has been updated.');
+    }
+  });
+
+  const updateUpiMutation = trpc.room.updateUpiId.useMutation({
+    onSuccess: () => {
+      setEditUpiModal(false);
+      refetchRoom();
+      Alert.alert('UPI Address Saved', 'Roommates will now be directed to this UPI address.');
+    },
+    onError: (err: any) => {
+      Alert.alert('Error', formatError(err));
     }
   });
 
@@ -173,6 +186,14 @@ export default function ProfileScreen() {
 
   const handleUpdateNotice = () => {
     updateNoticeMutation.mutate({ notice: noticeText.trim() });
+  };
+
+  const handleUpdateUpi = () => {
+    if (!upiText.trim()) {
+      Alert.alert('Validation Error', 'Please enter a valid UPI address (e.g. name@upi)');
+      return;
+    }
+    updateUpiMutation.mutate({ upiId: upiText.trim() });
   };
 
   const handleCreateChore = () => {
@@ -393,6 +414,27 @@ export default function ProfileScreen() {
                 <ChevronRight size={16} color="#94a3b8" />
               </TouchableOpacity>
 
+              {/* Configure UPI ID */}
+              <TouchableOpacity
+                onPress={() => {
+                  setUpiText(room?.upiId || '');
+                  setEditUpiModal(true);
+                }}
+                style={tw`flex-row items-center justify-between py-3.5 border-b border-slate-100`}
+                activeOpacity={0.7}
+              >
+                <View style={tw`flex-row items-center gap-3.5 flex-1`}>
+                  <View style={tw`w-9 h-9 bg-[#fdf3f5] rounded-xl items-center justify-center border border-[#f8e3e7]/55`}>
+                    <FileText size={18} color="#721c3b" />
+                  </View>
+                  <View>
+                    <Text style={tw`text-sm font-bold text-slate-800`}>Configure Room UPI ID</Text>
+                    <Text style={tw`text-xs text-slate-500 font-medium`}>Set the UPI address to receive rent and bills</Text>
+                  </View>
+                </View>
+                <ChevronRight size={16} color="#94a3b8" />
+              </TouchableOpacity>
+
               {/* Create Chore Loop */}
               <TouchableOpacity
                 onPress={() => setCreateChoreModal(true)}
@@ -562,6 +604,40 @@ export default function ProfileScreen() {
               activeOpacity={0.8}
             >
               <Text style={tw`text-white font-bold text-sm`}>Save Announcement</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ADMIN MODAL 2.5: Edit UPI ID */}
+      <Modal visible={editUpiModal} animationType="slide" transparent>
+        <View style={tw`flex-1 bg-slate-900/60 justify-end`}>
+          <View style={tw`bg-white rounded-t-[32px] p-6 pb-8 border-t border-slate-100 shadow-xl`}>
+            <View style={tw`flex-row justify-between items-center mb-5`}>
+              <Text style={tw`text-lg font-extrabold text-slate-900 tracking-tight`}>Configure Room UPI ID</Text>
+              <TouchableOpacity 
+                onPress={() => setEditUpiModal(false)}
+                style={tw`p-2 bg-slate-50 border border-slate-100 rounded-xl`}
+              >
+                <X size={16} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={tw`border border-slate-200 rounded-2xl px-4 py-3.5 text-slate-800 text-sm mb-5 bg-slate-50 font-medium`}
+              placeholder="e.g. yourname@okaxis"
+              placeholderTextColor="#94a3b8"
+              value={upiText}
+              onChangeText={setUpiText}
+              autoCapitalize="none"
+            />
+
+            <TouchableOpacity 
+              onPress={handleUpdateUpi} 
+              style={tw`bg-[#721c3b] rounded-2xl py-4 items-center shadow-md shadow-rose-900/10`}
+              activeOpacity={0.8}
+            >
+              <Text style={tw`text-white font-bold text-sm`}>Save UPI ID</Text>
             </TouchableOpacity>
           </View>
         </View>
