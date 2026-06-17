@@ -6,6 +6,7 @@ import { Chore } from '../../models/Chore';
 import { ChoreLog } from '../../models/ChoreLog';
 import { SwapRequest } from '../../models/SwapRequest';
 import { User } from '../../models/User';
+import { sendPushNotification } from '../../utils/push';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -147,6 +148,27 @@ export const choreRouter = createTRPCRouter({
       
       await chore.save();
 
+      // Notify the next active user
+      if (found) {
+        try {
+          const nextUserObj = order[nextIndex] as any;
+          if (nextUserObj && nextUserObj._id) {
+            const nextUserId = nextUserObj._id.toString();
+            const nextUserDb = await User.findById(nextUserId);
+            if (nextUserDb && nextUserDb.pushTokens && nextUserDb.pushTokens.length > 0) {
+              await sendPushNotification({
+                to: nextUserDb.pushTokens,
+                title: 'Your turn for a chore! 🧹',
+                body: `It's your turn to complete: "${chore.name}"`,
+                data: { screen: 'chores', choreId: chore._id.toString() }
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Failed to send push notification to next user:', err);
+        }
+      }
+
       return {
         message: 'Chore completed and turn rotated',
         chore
@@ -201,6 +223,23 @@ export const choreRouter = createTRPCRouter({
         status: 'pending'
       });
 
+      // Notify target user of swap request
+      try {
+        const fromUser = await User.findById(fromUserId);
+        const fromUserName = fromUser ? fromUser.name : 'A roommate';
+        const toUser = await User.findById(toUserId);
+        if (toUser && toUser.pushTokens && toUser.pushTokens.length > 0) {
+          await sendPushNotification({
+            to: toUser.pushTokens,
+            title: 'Chore Swap Request 🔄',
+            body: `${fromUserName} wants to swap their turn for "${chore.name}" with you.`,
+            data: { screen: 'chores', requestId: request._id.toString() }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to send swap request push notification:', err);
+      }
+
       return request;
     }),
 
@@ -233,8 +272,9 @@ export const choreRouter = createTRPCRouter({
         throw new TRPCError({ code: 'FORBIDDEN', message: 'You are not authorized to respond to this request' });
       }
 
+      let chore: any = null;
       if (accept) {
-        const chore = await Chore.findById(request.choreId);
+        chore = await Chore.findById(request.choreId);
         if (!chore) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Chore not found' });
         }
@@ -271,6 +311,28 @@ export const choreRouter = createTRPCRouter({
       }
 
       await request.save();
+
+      // Notify requester of the decision
+      try {
+        const fromUser = await User.findById(request.fromUserId);
+        const toUser = await User.findById(request.toUserId);
+        const toUserName = toUser ? toUser.name : 'Your roommate';
+        if (fromUser && fromUser.pushTokens && fromUser.pushTokens.length > 0) {
+          const choreObj = chore || await Chore.findById(request.choreId);
+          const choreName = choreObj ? choreObj.name : 'chore';
+          await sendPushNotification({
+            to: fromUser.pushTokens,
+            title: accept ? 'Swap Request Accepted! ✅' : 'Swap Request Declined ❌',
+            body: accept 
+              ? `${toUserName} accepted your request to swap "${choreName}"`
+              : `${toUserName} declined your request to swap "${choreName}"`,
+            data: { screen: 'chores' }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to send swap response push notification:', err);
+      }
+
       return { status: request.status };
     }),
 

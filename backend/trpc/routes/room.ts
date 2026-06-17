@@ -4,6 +4,7 @@ import { createTRPCRouter, protectedProcedure } from '../create-context';
 import { Room } from '../../models/Room';
 import { User } from '../../models/User';
 import { Chore } from '../../models/Chore';
+import { sendPushNotification } from '../../utils/push';
 
 // Helper to generate a unique 6-digit room code
 function generateRoomCode(): string {
@@ -289,6 +290,26 @@ export const roomRouter = createTRPCRouter({
 
       room.noticeMarquee = notice;
       await room.save();
+
+      // Send push notification to all roommates (except the admin)
+      try {
+        const roommates = await User.find({
+          roomId: admin.roomId,
+          _id: { $ne: adminId }
+        });
+        
+        const tokens = roommates.flatMap(u => u.pushTokens || []);
+        if (tokens.length > 0) {
+          await sendPushNotification({
+            to: tokens,
+            title: 'Notice Board Update 📢',
+            body: notice ? `New announcement: "${notice}"` : `Notice board was updated.`,
+            data: { screen: 'home' }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to send notice board update push notification:', err);
+      }
 
       return { noticeMarquee: room.noticeMarquee };
     }),

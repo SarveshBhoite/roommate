@@ -5,6 +5,7 @@ import Razorpay from 'razorpay';
 import { createTRPCRouter, protectedProcedure } from '../create-context';
 import { Contribution } from '../../models/Contribution';
 import { User } from '../../models/User';
+import { sendPushNotification } from '../../utils/push';
 
 // Initialize Razorpay conditionally
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
@@ -58,6 +59,26 @@ export const billRouter = createTRPCRouter({
         roomId: admin.roomId,
         splits
       });
+
+      // Send push notification to target roommates
+      try {
+        const targetUsers = await User.find({ _id: { $in: userIds } });
+        for (const user of targetUsers) {
+          if (user.pushTokens && user.pushTokens.length > 0) {
+            const userSplit = splits.find(s => s.userId === user._id.toString());
+            const amount = userSplit ? userSplit.shareAmount : shareAmount;
+            
+            await sendPushNotification({
+              to: user.pushTokens,
+              title: 'New bill split! 💸',
+              body: `New shared expense split: "${title}" - ₹${amount}`,
+              data: { screen: 'bills', contributionId: contribution._id.toString() }
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to send push notifications for split bill:', err);
+      }
 
       return contribution;
     }),

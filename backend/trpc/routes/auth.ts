@@ -127,4 +127,25 @@ export const authRouter = createTRPCRouter({
     }
     return user;
   }),
+
+  savePushToken: protectedProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { token } = input;
+      if (!token) return { success: false };
+
+      // Remove this token from any other users to avoid duplicates
+      await User.updateMany(
+        { _id: { $ne: ctx.user.userId }, pushTokens: token },
+        { $pull: { pushTokens: token } }
+      );
+
+      // Add to current user
+      await User.findByIdAndUpdate(
+        ctx.user.userId,
+        { $addToSet: { pushTokens: token } }
+      );
+
+      return { success: true };
+    }),
 });

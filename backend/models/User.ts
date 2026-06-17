@@ -7,7 +7,8 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', default: null },
   role: { type: String, enum: ['admin', 'member'], default: 'member' },
-  isOptedIn: { type: Boolean, default: true }
+  isOptedIn: { type: Boolean, default: true },
+  pushTokens: [{ type: String }]
 }, {
   timestamps: true
 });
