@@ -1,7 +1,7 @@
 export const theme = {
   colors: {
-    primary: '#6366f1', // Indigo
-    primaryDark: '#4f46e5',
+    primary: '#721c3b', // Burgundy/Red
+    primaryDark: '#5a152d',
     secondary: '#14b8a6', // Teal
     background: '#f8fafc', // Light slate
     surface: '#ffffff',

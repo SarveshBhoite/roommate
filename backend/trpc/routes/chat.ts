@@ -3,6 +3,7 @@ import { TRPCError } from '@trpc/server';
 import { createTRPCRouter, protectedProcedure } from '../create-context';
 import { ChatMessage } from '../../models/ChatMessage';
 import { User } from '../../models/User';
+import { sendPushNotification } from '../../utils/push';
 
 export const chatRouter = createTRPCRouter({
   send: protectedProcedure
@@ -22,6 +23,26 @@ export const chatRouter = createTRPCRouter({
         senderName: user.name,
         message
       });
+
+      // Notify other roommates in the room
+      try {
+        const roommates = await User.find({ 
+          roomId: user.roomId, 
+          _id: { $ne: user._id } 
+        });
+        
+        const tokens = roommates.flatMap(r => r.pushTokens || []);
+        if (tokens.length > 0) {
+          await sendPushNotification({
+            to: tokens,
+            title: `New Message from ${user.name} 💬`,
+            body: message.length > 50 ? message.substring(0, 50) + '...' : message,
+            data: { screen: 'chat' }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to send chat push notification:', err);
+      }
 
       return chatMessage;
     }),

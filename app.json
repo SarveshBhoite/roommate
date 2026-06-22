@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hubmate",
     "slug": "hubmate",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/hubmate.png",
     "scheme": "hubmate",
@@ -17,7 +17,8 @@
     },
     "android": {
       "package": "com.hubmate.app",
-      "versionCode": 2,
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 3,
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/hubmate.png",
@@ -26,6 +27,10 @@
     },
     "web": {
       "output": "static"
+    },
+    "notification": {
+      "icon": "./assets/images/hubmate.png",
+      "color": "#721c3b"
     },
     "plugins": [
       "expo-router",
