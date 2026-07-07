@@ -1,18 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
 import tw from 'twrnc';
-import { trpc } from '@/lib/trpc';
+import * as ImagePicker from 'expo-image-picker';
+import { trpc, formatError } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
-import { Send, RefreshCw, MessageSquare } from 'lucide-react-native';
+import { Send, RefreshCw, MessageSquare, Camera, X } from 'lucide-react-native';
 
 export default function ChatScreen() {
   const { user, lastViewedChat, setLastViewedChat } = useAuth();
   const isFocused = useIsFocused();
   const [inputText, setInputText] = useState('');
+  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+  const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -24,13 +27,16 @@ export default function ChatScreen() {
   const sendMessageMutation = trpc.chat.send.useMutation({
     onSuccess: () => {
       setInputText('');
+      setSelectedImageUri(null);
+      setSelectedImageBase64(null);
       setSending(false);
       refetchMessages().then(() => {
         setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
       });
     },
-    onError: () => {
+    onError: (err: any) => {
       setSending(false);
+      Alert.alert('Send Error', formatError(err));
     }
   });
 
@@ -65,10 +71,81 @@ export default function ChatScreen() {
     }
   }, [messages, isFocused, lastViewedChat, setLastViewedChat]);
 
+function getMessageDateLabel(dateString: string) {
+  const date = new Date(dateString);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return 'Today';
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday';
+  } else {
+    return date.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+}
+
+  const handlePickImage = async () => {
+    Alert.alert(
+      'Attach Photo',
+      'Select where you want to choose the photo from:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Camera 📷',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Camera permission is required.');
+              return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ['images'],
+              allowsEditing: false,
+              quality: 0.3,
+              base64: true
+            });
+            if (!result.canceled && result.assets?.[0]?.uri) {
+              setSelectedImageUri(result.assets[0].uri);
+              setSelectedImageBase64(result.assets[0].base64 || null);
+            }
+          }
+        },
+        {
+          text: 'Photo Library 🖼️',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Gallery permission is required.');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ['images'],
+              allowsEditing: false,
+              quality: 0.3,
+              base64: true
+            });
+            if (!result.canceled && result.assets?.[0]?.uri) {
+              setSelectedImageUri(result.assets[0].uri);
+              setSelectedImageBase64(result.assets[0].base64 || null);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleSend = () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim() && !selectedImageUri) return;
     setSending(true);
-    sendMessageMutation.mutate({ message: inputText.trim() });
+
+    const photoData = selectedImageBase64 ? `data:image/jpeg;base64,${selectedImageBase64}` : undefined;
+
+    sendMessageMutation.mutate({
+      message: inputText.trim() || undefined,
+      photoBase64: photoData
+    });
   };
 
   return (
@@ -120,48 +197,99 @@ export default function ChatScreen() {
             contentContainerStyle={tw`pb-8`}
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
           >
-            {messages.map((msg: any) => {
+            {messages.map((msg: any, index: number) => {
               const isMe = msg.senderId === user?._id;
 
+              // Calculate if we need a date separator
+              const currentDateStr = new Date(msg.createdAt).toDateString();
+              const prevMsg = index > 0 ? messages[index - 1] : null;
+              const prevDateStr = prevMsg ? new Date(prevMsg.createdAt).toDateString() : null;
+              const showDateSeparator = currentDateStr !== prevDateStr;
+
               return (
-                <View 
-                  key={msg._id} 
-                  style={tw`mb-4 max-w-[80%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}
-                >
-                  {/* Sender Name */}
-                  {!isMe && (
-                    <Text style={tw`text-xs font-bold text-[#721c3b] mb-1 ml-1`}>
-                      {msg.senderName}
-                    </Text>
+                <View key={msg._id}>
+                  {showDateSeparator && (
+                    <View style={tw`self-center my-4 bg-[#f1ebdf] border border-[#e8dfcf] px-3.5 py-1.5 rounded-full shadow-sm`}>
+                      <Text style={tw`text-[10px] font-black text-[#721c3b] tracking-wider uppercase`}>
+                        {getMessageDateLabel(msg.createdAt)}
+                      </Text>
+                    </View>
                   )}
 
-                  {/* Message Bubble */}
                   <View 
-                    style={tw`rounded-2xl px-4 py-3 shadow-sm ${
-                      isMe 
-                        ? 'bg-[#721c3b] rounded-tr-sm border border-[#5c162f]' 
-                        : 'bg-white border border-slate-100 rounded-tl-sm'
-                    }`}
+                    style={tw`mb-4 max-w-[80%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}
                   >
-                    <Text style={tw`text-sm leading-5 ${isMe ? 'text-white' : 'text-slate-800 font-medium'}`}>
-                      {msg.message}
+                    {/* Sender Name */}
+                    {!isMe && (
+                      <Text style={tw`text-xs font-bold text-[#721c3b] mb-1 ml-1`}>
+                        {msg.senderName}
+                      </Text>
+                    )}
+
+                    {/* Message Bubble */}
+                    <View 
+                      style={tw`rounded-2xl p-1 shadow-sm ${
+                        isMe 
+                          ? 'bg-[#721c3b] rounded-tr-sm border border-[#5c162f]' 
+                          : 'bg-white border border-slate-100 rounded-tl-sm'
+                      }`}
+                    >
+                      {msg.imageUrl && (
+                        <Image 
+                          source={{ uri: msg.imageUrl }} 
+                          style={tw`w-56 h-40 rounded-xl ${msg.message ? 'mb-1' : ''}`} 
+                          resizeMode="cover"
+                        />
+                      )}
+                      {msg.message ? (
+                        <Text style={tw`text-sm leading-5 px-3 py-2 ${isMe ? 'text-white' : 'text-slate-800 font-medium'}`}>
+                          {msg.message}
+                        </Text>
+                      ) : null}
+                    </View>
+
+                    {/* Timestamp */}
+                    <Text style={tw`text-[10px] text-slate-400 mt-1 mx-1.5`}>
+                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
                   </View>
-
-                  {/* Timestamp */}
-                  <Text style={tw`text-[10px] text-slate-400 mt-1 mx-1.5`}>
-                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
                 </View>
               );
             })}
           </ScrollView>
         )}
 
+        {/* Selected image preview */}
+        {selectedImageUri && (
+          <View style={tw`px-4 py-3 bg-slate-50 border-t border-slate-100 flex-row items-center gap-3`}>
+            <View style={tw`relative`}>
+              <Image source={{ uri: selectedImageUri }} style={tw`w-14 h-14 rounded-xl`} />
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedImageUri(null);
+                  setSelectedImageBase64(null);
+                }}
+                style={tw`absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-600 rounded-full items-center justify-center border border-white`}
+              >
+                <X size={10} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+            <Text style={tw`text-xs text-slate-500 font-semibold flex-1`}>Photo selected. Type a caption or press send.</Text>
+          </View>
+        )}
+
         {/* Input Bar */}
-        <View style={tw`flex-row items-center gap-3 px-4 py-4.5 bg-white border-t border-slate-100`}>
+        <View style={tw`flex-row items-end gap-3 px-4 py-4.5 bg-white border-t border-slate-100`}>
+          <TouchableOpacity
+            onPress={handlePickImage}
+            style={tw`w-11 h-11 bg-slate-50 border border-slate-200 rounded-2xl items-center justify-center`}
+            activeOpacity={0.7}
+          >
+            <Camera size={18} color="#721c3b" />
+          </TouchableOpacity>
+
           <TextInput
-            style={tw`flex-grow bg-slate-50 border border-slate-200 rounded-2xl px-4.5 py-3 text-slate-800 text-sm max-h-24 font-medium`}
+            style={tw`flex-grow bg-slate-50 border border-slate-200 rounded-2xl px-4.5 py-2.5 text-slate-800 text-sm max-h-24 font-medium`}
             placeholder="Write a message..."
             placeholderTextColor="#94a3b8"
             value={inputText}
@@ -171,9 +299,9 @@ export default function ChatScreen() {
           
           <TouchableOpacity
             onPress={handleSend}
-            disabled={sending || !inputText.trim()}
+            disabled={sending || (!inputText.trim() && !selectedImageUri)}
             style={tw`w-11 h-11 bg-[#721c3b] rounded-2xl items-center justify-center shadow-md shadow-rose-900/20 ${
-              !inputText.trim() ? 'opacity-50' : ''
+              (!inputText.trim() && !selectedImageUri) ? 'opacity-50' : ''
             }`}
             activeOpacity={0.8}
           >

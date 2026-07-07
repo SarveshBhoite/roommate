@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, FlatList } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, FlatList, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from 'expo-router';
@@ -66,6 +66,17 @@ export default function ChoresScreen() {
       refetchChores();
       setEditModalVisible(false);
       Alert.alert('Chore Updated', 'Chore rotation sequence has been updated successfully!');
+    },
+    onError: (err: any) => {
+      Alert.alert('Error', formatError(err));
+    }
+  });
+
+  const deleteChoreMutation = trpc.chore.delete.useMutation({
+    onSuccess: () => {
+      refetchChores();
+      setEditModalVisible(false);
+      Alert.alert('Chore Deleted', 'The chore has been deleted successfully.');
     },
     onError: (err: any) => {
       Alert.alert('Error', formatError(err));
@@ -155,6 +166,30 @@ export default function ChoresScreen() {
     });
   };
 
+  const handleDeleteChore = () => {
+    if (!selectedChoreToEdit) return;
+
+    if (Platform.OS === 'web') {
+      const confirmDelete = window.confirm(`Are you sure you want to delete the chore "${selectedChoreToEdit.name}"? This will delete all completion logs and active swap requests.`);
+      if (confirmDelete) {
+        deleteChoreMutation.mutate({ choreId: selectedChoreToEdit._id });
+      }
+    } else {
+      Alert.alert(
+        'Delete Chore',
+        `Are you sure you want to delete "${selectedChoreToEdit.name}"? This will permanently delete all logs and pending swap requests for this chore.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Delete', 
+            style: 'destructive',
+            onPress: () => deleteChoreMutation.mutate({ choreId: selectedChoreToEdit._id }) 
+          }
+        ]
+      );
+    }
+  };
+
   const toggleEditUserCheckbox = (id: string) => {
     setEditedRotationUsers(prev =>
       prev.includes(id) ? prev.filter(uid => uid !== id) : [...prev, id]
@@ -164,8 +199,7 @@ export default function ChoresScreen() {
   // Helper: check if a user index in rotationOrder appears AFTER the current active index
   const getEligibleSwapUsers = (chore: any) => {
     if (!chore) return [];
-    const fromIndex = chore.currentIndex;
-    return chore.rotationOrder.filter((m: any, idx: number) => idx > fromIndex);
+    return chore.rotationOrder.filter((m: any) => m._id !== user?._id);
   };
 
   return (
@@ -228,7 +262,7 @@ export default function ChoresScreen() {
           </View>
         ) : (
           chores.map((chore: any) => {
-            const activeUser = chore.rotationOrder[chore.currentIndex];
+            const activeUser = chore.activeUser;
             const isMyTurn = activeUser?._id === user?._id;
 
             return (
@@ -257,7 +291,7 @@ export default function ChoresScreen() {
                 {/* Member sequence indicator */}
                 <View style={tw`flex-row flex-wrap gap-2 py-3 mb-4 border-t border-b border-slate-50`}>
                   {chore.rotationOrder.map((m: any, idx: number) => {
-                    const isActive = idx === chore.currentIndex;
+                    const isActive = m._id === activeUser?._id;
                     return (
                       <View
                         key={m._id}
@@ -411,6 +445,17 @@ export default function ChoresScreen() {
               style={tw`bg-[#721c3b] rounded-2xl py-4 items-center justify-center shadow-lg shadow-rose-900/20`}
             >
               <Text style={tw`text-white font-bold text-sm uppercase tracking-wider`}>Save Sequence</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleDeleteChore}
+              style={tw`border border-red-200 rounded-2xl py-4 items-center justify-center mt-3 bg-red-50/50`}
+            >
+              {deleteChoreMutation.isPending || deleteChoreMutation.isLoading ? (
+                <ActivityIndicator size="small" color="#ef4444" />
+              ) : (
+                <Text style={tw`text-red-600 font-bold text-sm uppercase tracking-wider`}>Delete Chore</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
