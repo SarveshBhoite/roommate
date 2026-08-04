@@ -395,5 +395,59 @@ export const roomRouter = createTRPCRouter({
       await room.save();
 
       return { upiId: room.upiId };
+    }),
+
+  adminToggleUserOptOut: protectedProcedure
+    .input(z.object({ targetUserId: z.string(), optIn: z.boolean() }))
+    .mutation(async ({ input, ctx }) => {
+      const { targetUserId, optIn } = input;
+      const adminId = ctx.user.userId;
+
+      const admin = await User.findById(adminId);
+      if (!admin || admin.role !== 'admin' || !admin.roomId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+      }
+
+      const user = await User.findById(targetUserId);
+      if (!user || user.roomId?.toString() !== admin.roomId.toString()) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found in your room' });
+      }
+
+      user.isOptedIn = optIn;
+      await user.save();
+
+      // If user is opting out, auto-rotate any chores where they are currently active
+      if (!optIn) {
+        const chores = await Chore.find({ roomId: admin.roomId }).populate('rotationOrder');
+        for (const chore of chores) {
+          const baseUser = chore.rotationOrder[chore.currentIndex];
+          if (baseUser && baseUser._id.toString() === targetUserId) {
+            // Find the next opted-in user in the loop
+            const order = chore.rotationOrder;
+            const len = order.length;
+            let nextIndex = chore.currentIndex;
+            let found = false;
+
+            for (let i = 1; i <= len; i++) {
+              const checkIdx = (chore.currentIndex + i) % len;
+              const checkUser = order[checkIdx] as any;
+              // Since the target user just opted out, they are not opted-in anymore
+              const isUserOptedIn = checkUser._id.toString() === targetUserId ? false : checkUser.isOptedIn;
+              if (checkUser && isUserOptedIn) {
+                nextIndex = checkIdx;
+                found = true;
+                break;
+              }
+            }
+
+            if (found) {
+              chore.currentIndex = nextIndex;
+              await chore.save();
+            }
+          }
+        }
+      }
+
+      return { success: true, isOptedIn: user.isOptedIn };
     })
 });

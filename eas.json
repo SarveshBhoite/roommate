@@ -13,12 +13,12 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://roommate-cm2v.onrender.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://roommate-cm2v-84y1.onrender.com"
       }
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://roommate-cm2v.onrender.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://roommate-cm2v-84y1.onrender.com"
       }
     }
   },

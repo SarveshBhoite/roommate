@@ -19,18 +19,34 @@ function getAssignedUserForChore(chore: any) {
   const baseUser = chore.rotationOrder[chore.currentIndex];
   if (!baseUser) return null;
 
-  // Find if there is an active debt where toUserId is this baseUser
-  // And the ower (fromUserId) is opted-in
-  const activeDebt = chore.debts?.find((d: any) => {
+  const baseUserId = baseUser._id.toString();
+
+  // 1. Check if baseUser is owed a turn (Collecting Debt).
+  // If so, the ower (fromUserId) must do it.
+  const debtToCollect = chore.debts?.find((d: any) => {
     const ower = d.fromUserId;
     const isOwerOptedIn = ower && ower.isOptedIn;
-    const isOweeMatch = d.toUserId && d.toUserId._id.toString() === baseUser._id.toString();
+    const isOweeMatch = d.toUserId && d.toUserId._id.toString() === baseUserId;
     return isOweeMatch && isOwerOptedIn;
   });
 
-  if (activeDebt) {
-    return activeDebt.fromUserId; // The ower is assigned
+  if (debtToCollect) {
+    return debtToCollect.fromUserId;
   }
+
+  // 2. Check if baseUser has swapped/deferred their current turn.
+  // If so, the accepter (toUserId) must do it.
+  const swapDeferred = chore.debts?.find((d: any) => {
+    const accepter = d.toUserId;
+    const isAccepterOptedIn = accepter && accepter.isOptedIn;
+    const isOwerMatch = d.fromUserId && d.fromUserId._id.toString() === baseUserId;
+    return isOwerMatch && isAccepterOptedIn;
+  });
+
+  if (swapDeferred) {
+    return swapDeferred.toUserId;
+  }
+
   return baseUser;
 }
 

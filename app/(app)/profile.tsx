@@ -144,6 +144,15 @@ export default function ProfileScreen() {
     }
   });
 
+  const adminToggleOptMutation = trpc.room.adminToggleUserOptOut.useMutation({
+    onSuccess: () => {
+      refetchMembers();
+    },
+    onError: (err: any) => {
+      Alert.alert('Error', formatError(err));
+    }
+  });
+
   const transferAdminMutation = trpc.room.transferAdmin.useMutation({
     onSuccess: (data: any) => {
       setTransferAdminModal(false);
@@ -168,6 +177,10 @@ export default function ProfileScreen() {
   const handleToggleOpt = (val: boolean) => {
     setLoadingToggle(true);
     toggleOptMutation.mutate({ optIn: val });
+  };
+
+  const handleAdminToggleOpt = (targetUserId: string, val: boolean) => {
+    adminToggleOptMutation.mutate({ targetUserId, optIn: val });
   };
 
   const handleLogout = async () => {
@@ -489,30 +502,44 @@ export default function ProfileScreen() {
                 <ChevronRight size={16} color="#94a3b8" />
               </TouchableOpacity>
 
-              {/* Kick Members List */}
+              {/* Kick & Manage Members List */}
               <View style={tw`mt-4`}>
-                <Text style={tw`text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-widest`}>Kick Roommates</Text>
+                <Text style={tw`text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-widest`}>Manage Roommates</Text>
                 {members?.filter((m: any) => m._id !== user?._id).length === 0 ? (
                   <Text style={tw`text-slate-400 text-xs py-2 font-medium`}>No other roommates to manage.</Text>
                 ) : (
                   members?.filter((m: any) => m._id !== user?._id).map((m: any) => (
                     <View key={m._id} style={tw`flex-row justify-between items-center py-2.5 border-b border-slate-50 last:border-0`}>
-                      <View style={tw`flex-row items-center gap-2.5`}>
+                      <View style={tw`flex-row items-center gap-2.5 flex-1`}>
                         <View style={tw`w-8 h-8 bg-slate-50 rounded-lg items-center justify-center border border-slate-100`}>
                           <Text style={tw`text-xs font-bold text-slate-600`}>{m.name.charAt(0).toUpperCase()}</Text>
                         </View>
-                        <View>
+                        <View style={tw`flex-1 mr-2`}>
                           <Text style={tw`text-sm font-bold text-slate-800`}>{m.name}</Text>
-                          <Text style={tw`text-[10px] text-slate-500`}>{m.phone || 'No phone'}</Text>
+                          <Text style={tw`text-[10px] text-slate-500`}>{m.phone || 'No phone'} • {m.isOptedIn ? 'On Duty' : 'Away'}</Text>
                         </View>
                       </View>
-                      <TouchableOpacity 
-                        onPress={() => handleKickUser(m._id, m.name)} 
-                        style={tw`p-2 bg-rose-50 hover:bg-rose-100 rounded-xl`}
-                        activeOpacity={0.7}
-                      >
-                        <Trash2 size={14} color="#ef4444" />
-                      </TouchableOpacity>
+                      
+                      <View style={tw`flex-row items-center gap-3`}>
+                        {adminToggleOptMutation.isPending && adminToggleOptMutation.variables?.targetUserId === m._id ? (
+                          <ActivityIndicator size="small" color="#721c3b" />
+                        ) : (
+                          <Switch
+                            value={m.isOptedIn}
+                            onValueChange={(val) => handleAdminToggleOpt(m._id, val)}
+                            trackColor={{ false: '#e2e8f0', true: '#f8d3de' }}
+                            thumbColor={m.isOptedIn ? '#721c3b' : '#cbd5e1'}
+                            style={Platform.OS === 'web' ? {} : { transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+                          />
+                        )}
+                        <TouchableOpacity 
+                          onPress={() => handleKickUser(m._id, m.name)} 
+                          style={tw`p-2 bg-rose-50 hover:bg-rose-100 rounded-xl`}
+                          activeOpacity={0.7}
+                        >
+                          <Trash2 size={14} color="#ef4444" />
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   ))
                 )}

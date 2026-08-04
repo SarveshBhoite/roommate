@@ -161,7 +161,7 @@ export default function DashboardScreen() {
               </View>
             ) : (
               chores.map((chore: any, idx: number) => {
-                const activeUser = chore.rotationOrder[chore.currentIndex];
+                const activeUser = chore.activeUser;
                 const isActiveUserSelf = activeUser?._id === user?._id;
                 return (
                   <View 
