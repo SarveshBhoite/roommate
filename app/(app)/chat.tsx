@@ -289,7 +289,7 @@ function getMessageDateLabel(dateString: string) {
           </TouchableOpacity>
 
           <TextInput
-            style={tw`flex-grow bg-slate-50 border border-slate-200 rounded-2xl px-4.5 py-2.5 text-slate-800 text-sm max-h-24 font-medium`}
+            style={tw`flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4.5 py-2.5 text-slate-800 text-sm max-h-24 font-medium`}
             placeholder="Write a message..."
             placeholderTextColor="#94a3b8"
             value={inputText}
