@@ -7,7 +7,7 @@ const ContributionSchema = new mongoose.Schema({
   splits: [{
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     shareAmount: { type: Number, required: true },
-    status: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
+    status: { type: String, enum: ['unpaid', 'pending_verification', 'paid'], default: 'unpaid' },
     razorpayOrderId: { type: String, default: null },
     razorpayPaymentId: { type: String, default: null }
   }]

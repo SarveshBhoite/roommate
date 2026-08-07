@@ -5,6 +5,14 @@ import { Room } from '../../models/Room';
 import { User } from '../../models/User';
 import { Chore } from '../../models/Chore';
 import { sendPushNotification } from '../../utils/push';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // Helper to generate a unique 6-digit room code
 function generateRoomCode(): string {
@@ -395,6 +403,39 @@ export const roomRouter = createTRPCRouter({
       await room.save();
 
       return { upiId: room.upiId };
+    }),
+
+  updateQrCode: protectedProcedure
+    .input(z.object({ photoBase64: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { photoBase64 } = input;
+      const adminId = ctx.user.userId;
+
+      const admin = await User.findById(adminId);
+      if (!admin || admin.role !== 'admin' || !admin.roomId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+      }
+
+      const room = await Room.findById(admin.roomId);
+      if (!room) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Room not found' });
+      }
+
+      try {
+        const uploadRes = await cloudinary.uploader.upload(photoBase64, {
+          folder: process.env.CLOUDINARY_FOLDER || 'roommate_qr',
+        });
+        room.qrCodeUrl = uploadRes.secure_url;
+        await room.save();
+      } catch (uploadError: any) {
+        console.error('Cloudinary upload error in QR update:', uploadError);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to upload QR Code to Cloudinary'
+        });
+      }
+
+      return { qrCodeUrl: room.qrCodeUrl };
     }),
 
   adminToggleUserOptOut: protectedProcedure

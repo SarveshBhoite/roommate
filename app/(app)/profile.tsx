@@ -6,6 +6,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import tw from 'twrnc';
 import { trpc, formatError } from '@/lib/trpc';
 import { useAuth } from '@/contexts/auth-context';
+import * as ImagePicker from 'expo-image-picker';
 import { 
   User, 
   LogOut, 
@@ -95,6 +96,20 @@ export default function ProfileScreen() {
       setEditNoticeModal(false);
       refetchRoom();
       Alert.alert('Notice Updated', 'Marquee announcement has been updated.');
+    }
+  });
+
+  const [uploadingQr, setUploadingQr] = useState(false);
+
+  const updateQrCodeMutation = trpc.room.updateQrCode.useMutation({
+    onSuccess: () => {
+      refetchRoom();
+      Alert.alert('QR Code Saved', 'Your Room payment QR code has been updated successfully!');
+      setUploadingQr(false);
+    },
+    onError: (err: any) => {
+      Alert.alert('Upload Error', formatError(err));
+      setUploadingQr(false);
     }
   });
 
@@ -207,6 +222,60 @@ export default function ProfileScreen() {
       return;
     }
     updateUpiMutation.mutate({ upiId: upiText.trim() });
+  };
+
+  const handleUploadQrCode = async () => {
+    Alert.alert(
+      'Upload Payment QR',
+      'Select QR code image from library or take a photo:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Camera 📷',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Camera permission is required.');
+              return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ['images'],
+              allowsEditing: false,
+              quality: 0.4,
+              base64: true
+            });
+            if (!result.canceled && result.assets?.[0]?.base64) {
+              setUploadingQr(true);
+              updateQrCodeMutation.mutate({
+                photoBase64: `data:image/jpeg;base64,${result.assets[0].base64}`
+              });
+            }
+          }
+        },
+        {
+          text: 'Photo Library 🖼️',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Gallery permission is required.');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ['images'],
+              allowsEditing: false,
+              quality: 0.4,
+              base64: true
+            });
+            if (!result.canceled && result.assets?.[0]?.base64) {
+              setUploadingQr(true);
+              updateQrCodeMutation.mutate({
+                photoBase64: `data:image/jpeg;base64,${result.assets[0].base64}`
+              });
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleCreateChore = () => {
@@ -446,6 +515,30 @@ export default function ProfileScreen() {
                   </View>
                 </View>
                 <ChevronRight size={16} color="#94a3b8" />
+              </TouchableOpacity>
+
+              {/* Upload Payment QR Code */}
+              <TouchableOpacity
+                onPress={handleUploadQrCode}
+                style={tw`flex-row items-center justify-between py-3.5 border-b border-slate-100`}
+                activeOpacity={0.7}
+              >
+                <View style={tw`flex-row items-center gap-3.5 flex-1`}>
+                  <View style={tw`w-9 h-9 bg-[#fdf3f5] rounded-xl items-center justify-center border border-[#f8e3e7]/55`}>
+                    <PlusCircle size={18} color="#721c3b" />
+                  </View>
+                  <View style={tw`flex-1`}>
+                    <Text style={tw`text-sm font-bold text-slate-800`}>Upload Payment QR Code</Text>
+                    <Text style={tw`text-xs text-slate-500 font-medium`}>
+                      {room?.qrCodeUrl ? 'QR code uploaded (tap to change)' : 'Upload QR code for split bill payments'}
+                    </Text>
+                  </View>
+                </View>
+                {uploadingQr ? (
+                  <ActivityIndicator size="small" color="#721c3b" />
+                ) : (
+                  <ChevronRight size={16} color="#94a3b8" />
+                )}
               </TouchableOpacity>
 
               {/* Create Chore Loop */}

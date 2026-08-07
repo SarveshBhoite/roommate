@@ -247,9 +247,59 @@ export const billRouter = createTRPCRouter({
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'You are not included in this split' });
       }
 
-      userSplit.status = 'paid';
+      userSplit.status = 'pending_verification';
       userSplit.razorpayPaymentId = `upi_${crypto.randomBytes(8).toString('hex')}`;
       await contribution.save();
+
+      return { success: true, status: 'pending_verification' };
+    }),
+
+  adminConfirmPayment: protectedProcedure
+    .input(
+      z.object({
+        contributionId: z.string(),
+        targetUserId: z.string()
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { contributionId, targetUserId } = input;
+      const adminId = ctx.user.userId;
+
+      const admin = await User.findById(adminId);
+      if (!admin || admin.role !== 'admin' || !admin.roomId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+      }
+
+      const contribution = await Contribution.findById(contributionId);
+      if (!contribution) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Contribution not found' });
+      }
+
+      const userSplit = contribution.splits.find(
+        (split: any) => split.userId.toString() === targetUserId
+      );
+
+      if (!userSplit) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'User not included in this split' });
+      }
+
+      userSplit.status = 'paid';
+      await contribution.save();
+
+      // Send push notification to target user that their payment was approved/verified
+      try {
+        const targetUser = await User.findById(targetUserId);
+        if (targetUser && targetUser.pushTokens && targetUser.pushTokens.length > 0) {
+          await sendPushNotification({
+            to: targetUser.pushTokens,
+            title: 'Payment Verified! ✅',
+            body: `Your payment for "${contribution.title}" was verified by the Admin.`,
+            data: { screen: 'bills' }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to send push notification for payment approval:', err);
+      }
 
       return { success: true, status: 'paid' };
     })

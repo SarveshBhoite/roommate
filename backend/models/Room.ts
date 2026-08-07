@@ -6,7 +6,8 @@ const RoomSchema = new mongoose.Schema({
   adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   pendingMembers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   noticeMarquee: { type: String, default: "" },
-  upiId: { type: String, default: "" }
+  upiId: { type: String, default: "" },
+  qrCodeUrl: { type: String, default: "" }
 }, {
   timestamps: true
 });
