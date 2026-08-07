@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Platform, Linking, Image } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import * as FileSystem from 'expo-file-system/build/legacy/FileSystem';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
