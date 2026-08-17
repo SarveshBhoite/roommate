@@ -17,7 +17,7 @@ export const getBaseUrl = () => {
 
   // If we are running in a built production environment (not local development), fallback to live server
   if (typeof __DEV__ === 'undefined' || !__DEV__) {
-    return 'https://roommate-cm2v.onrender.com';
+    return 'https://hubmate.jisnudigital.com';
   }
 
   // Fallback default for local development. Wi-Fi IP used for Expo Go physical device testing.
